@@ -24,7 +24,7 @@ const container = {
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.42, 0, 0.58, 1] } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.42, 0, 0.58, 1] as const } },
 }
 
 const modalOverlay = {
