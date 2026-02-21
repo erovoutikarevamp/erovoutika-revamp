@@ -5,17 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
 import { useLanguage } from '@/lib/i18n/languageContext'
 import Image from 'next/image'
-
-type NewsItem = {
-  id: string
-  title: string
-  excerpt: string
-  content: string | null
-  category: string
-  date: string
-  image_url: string | null
-  url: string | null
-}
+import type { NewsItem } from '@/lib/types' // <--- use canonical type
 
 const container = {
   hidden: { opacity: 0 },
@@ -27,11 +17,7 @@ const fadeUp = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] } },
 }
 
-const modalOverlay = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1 },
-  exit: { opacity: 0 },
-}
+const modalOverlay = { hidden: { opacity: 0 }, show: { opacity: 1 }, exit: { opacity: 0 } }
 
 const modalContent = {
   hidden: { opacity: 0, scale: 0.97, y: 16 },
@@ -71,9 +57,7 @@ function NewsModal({
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  const paragraphs = news.content
-    ? news.content.split('\n').filter(Boolean)
-    : [news.excerpt]
+  const paragraphs = news.content?.split('\n').filter(Boolean) ?? [news.excerpt]
 
   return (
     <motion.div
@@ -161,19 +145,19 @@ function NewsModal({
                 ))}
               </div>
 
-{news.url && (
-  <div className="mt-8">
-    <a
-      href={news.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-600 text-white font-semibold text-sm hover:bg-orange-700 transition-colors group"
-    >
-      View Original Source
-      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-    </a>
-  </div>
-)}
+              {news.url && (
+                <div className="mt-8">
+                  <a
+                    href={news.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-600 text-white font-semibold text-sm hover:bg-orange-700 transition-colors group"
+                  >
+                    View Original Source
+                    <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </a>
+                </div>
+              )}
             </div>
 
             {allNews.length > 1 && (
@@ -239,22 +223,19 @@ function SmallCard({ item, onClick }: { item: NewsItem; onClick: () => void }) {
 }
 
 export function News() {
-  const { t, language } = useLanguage() // Get current language
+  const { t, language } = useLanguage()
   const [news, setNews] = useState<NewsItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null)
 
-  useEffect(() => { 
-    fetchNews() 
-  }, [language]) // Refetch when language changes
+  useEffect(() => { fetchNews() }, [language])
 
   const fetchNews = async () => {
     setIsLoading(true)
     try {
-      // Call translation API instead of direct Supabase
       const response = await fetch(`/api/news/translate?lang=${language}`)
       if (response.ok) {
-        const data = await response.json()
+        const data: NewsItem[] = await response.json()
         setNews(data)
       }
     } catch (error) {
