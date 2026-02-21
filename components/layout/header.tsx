@@ -3,10 +3,9 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
-import { Menu, X, ShoppingCart, GraduationCap, Bot, UserCircle } from 'lucide-react'
+import { Menu, X, ShoppingCart, GraduationCap, Bot } from 'lucide-react'
 import { SITE_CONFIG } from '@/lib/constants'
 import { usePathname } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import { supabase } from '@/lib/supabase/client'
 import { LanguageToggle } from '@/components/LanguageToggle'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -14,24 +13,9 @@ import { useLanguage } from '@/lib/i18n/languageContext'
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
   const pathname = usePathname()
   const { t } = useLanguage()
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setIsLoggedIn(!!session)
-    }
-
-    checkAuth()
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsLoggedIn(!!session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
 
   const getIcon = (iconType?: string) => {
     if (iconType === 'graduation') return <GraduationCap className="w-4 h-4 mr-1.5" />
@@ -133,20 +117,6 @@ export function Header() {
               <ShoppingCart className="w-4 h-4 mr-2" />
               Shop Now
             </a>
-
-            {!isLoggedIn && (
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="rounded-full border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400 transition-all"
-              >
-                <Link href="/login">
-                  <UserCircle className="w-5 h-5 mr-2" />
-                  Login
-                </Link>
-              </Button>
-            )}
           </div>
 
           {/* Mobile: theme toggle + menu button */}
@@ -218,20 +188,6 @@ export function Header() {
               <ShoppingCart className="w-4 h-4 mr-2" />
               Shop Now
             </a>
-
-            {!isLoggedIn && (
-              <Button
-                asChild
-                variant="outline"
-                size="lg"
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:text-gray-300 hover:bg-orange-50 dark:hover:bg-orange-950/40 hover:border-orange-400 hover:text-orange-600 dark:hover:text-orange-400"
-              >
-                <Link href="/login" onClick={() => setIsMenuOpen(false)}>
-                  <UserCircle className="w-4 h-4 mr-2" />
-                  Admin Login
-                </Link>
-              </Button>
-            )}
           </nav>
         )}
       </div>

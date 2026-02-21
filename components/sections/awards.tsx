@@ -1,5 +1,8 @@
 'use client'
 
+import { Cormorant_Garamond } from 'next/font/google'
+const cormorantGaramond = Cormorant_Garamond({ subsets: ['latin'], weight: ['700'], display: 'swap' })
+
 import { Trophy, Star, Calendar, Medal } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
 import { useEffect, useState } from 'react'
@@ -80,10 +83,10 @@ export function Awards() {
             <Trophy className="w-4 h-4" />
             {t.awards.badge}
           </div>
-          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+          <h2 className={`text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-slate-100 ${cormorantGaramond.className}}`}>
             Awards & Accreditation
           </h2>
-          <p className="text-xl text-gray-500 dark:text-slate-400 leading-relaxed">
+          <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed">
             {t.awards.subtitle}
           </p>
         </div>
@@ -105,7 +108,7 @@ export function Awards() {
               <motion.div
                 key={award.id}
                 variants={cardVariant}
-                className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col"
+                className="group relative bg-white dark:bg-slate-900 rounded-xl border border-gray-100 dark:border-slate-700 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 overflow-hidden flex flex-col"
               >
                 {/* Top accent on hover */}
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-orange-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

@@ -1,5 +1,8 @@
 'use client'
 
+import { Outfit } from 'next/font/google'
+const outfit = Outfit({ subsets: ['latin'], weight: ['700'], display: 'swap' })
+
 import { Mail, MapPin, Phone, Send, Loader2, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -56,17 +59,17 @@ export function Contact() {
     <section className="py-20 bg-gradient-to-b from-gray-50 to-white dark:from-slate-800 dark:to-slate-900">
       <div className="container mx-auto px-6">
         <div className="max-w-3xl mx-auto text-center mb-20 space-y-6">
-          <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+          <h2 className={`text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-slate-100 ${outfit.className}}`}>
             {t.contact.title}
           </h2>
-          <p className="text-xl text-gray-600 dark:text-slate-400 leading-relaxed">
+          <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
             {t.contact.subtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           {/* Contact Form */}
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-slate-700">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-8 border border-gray-200 dark:border-slate-700">
 
             {/* Success Message */}
             {isSuccess && (
@@ -130,7 +133,7 @@ export function Contact() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white rounded-full h-12 font-medium shadow-lg hover:shadow-xl transition-all"
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white rounded-lg h-10 font-medium shadow-md hover:shadow-lg transition-all"
               >
                 {isSubmitting ? (
                   <>
@@ -149,8 +152,8 @@ export function Contact() {
 
           {/* Contact Info & Map */}
           <div className="space-y-8">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8 border border-gray-200 dark:border-slate-700 space-y-6">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-slate-100 mb-6">{t.contact.contactInfo}</h3>
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-8 border border-gray-200 dark:border-slate-700 space-y-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100 mb-4">{t.contact.contactInfo}</h3>
               
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 bg-orange-100 dark:bg-orange-950/40 rounded-full flex items-center justify-center flex-shrink-0">
@@ -188,7 +191,7 @@ export function Contact() {
             </div>
 
             {/* Google Maps */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-slate-700 h-64">
+            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl overflow-hidden border border-gray-200 dark:border-slate-700 h-64">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3861.3087374157746!2d121.04721931484065!3d14.565006989825535!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397c90264a0cfb5%3A0x2b6e7c4e8c9a5e8!2sEpifanio%20de%20los%20Santos%20Ave%2C%20Makati%2C%20Metro%20Manila!5e0!3m2!1sen!2sph!4v1234567890"
                 width="100%"

@@ -1,5 +1,8 @@
 'use client'
 
+import { Libre_Baskerville } from 'next/font/google'
+const libreBaskerville = Libre_Baskerville({ subsets: ['latin'], weight: ['700'], display: 'swap' })
+
 import { Tag, X, ArrowUpRight, ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState, useCallback } from 'react'
@@ -91,7 +94,7 @@ function NewsModal({
           initial="hidden"
           animate="show"
           exit="exit"
-          className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-2xl flex"
+          className="relative w-full max-w-4xl bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-2xl flex"
           onClick={(e) => e.stopPropagation()}
         >
           {news.image_url && (
@@ -143,7 +146,7 @@ function NewsModal({
                 </span>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-slate-100 leading-tight mb-3">
+              <h2 className={`text-2xl md:text-3xl font-bold text-gray-900 dark:text-slate-100 leading-tight mb-3 ${libreBaskerville.className}`}>
                 {news.title}
               </h2>
 
@@ -284,10 +287,10 @@ export function News() {
       <section className="py-20 bg-white dark:bg-slate-900">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto text-center mb-16 space-y-6">
-            <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-gray-900 dark:text-slate-100">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-slate-100 ${libreBaskerville.className}}">
               {t.news.title}
             </h2>
-            <p className="text-xl text-gray-600 dark:text-slate-400 leading-relaxed">
+            <p className="text-sm text-gray-600 dark:text-slate-400 leading-relaxed">
               {t.news.subtitle}
             </p>
           </div>

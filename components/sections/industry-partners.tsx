@@ -202,7 +202,7 @@ export function IndustryPartners() {
                       onClick={() => setSelected(partner)}
                       title={partner.name}
                       // No border, no background — just the logo floating
-                      className="flex-shrink-0 w-[calc(20%-25.6px)] h-32 flex items-center justify-center cursor-pointer group"
+                      className="flex-shrink-0 w-[calc(20%-25.6px)] h-40 flex items-center justify-center cursor-pointer group"
                     >
                       {partner.image_url ? (
                         <div className="relative w-full h-full">
@@ -211,7 +211,7 @@ export function IndustryPartners() {
                             alt={partner.name}
                             fill
                             sizes="200px"
-                            className="object-contain grayscale opacity-40 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
+                            className="object-contain grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300"
                           />
                         </div>
                       ) : (

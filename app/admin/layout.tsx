@@ -195,9 +195,6 @@ export default function AdminLayout({
 
             {/* Page title - hidden on mobile */}
             <div className="hidden lg:block">
-              <h1 className="text-2xl font-bold bg-linear-to-r from-slate-900 to-orange-600 bg-clip-text text-transparent">
-                Admin Dashboard
-              </h1>
             </div>
 
             {/* User dropdown */}

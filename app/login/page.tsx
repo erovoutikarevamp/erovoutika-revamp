@@ -110,35 +110,6 @@ export default function LoginPage() {
               className="h-16 w-auto brightness-0 invert"
             />
           </div>
-
-          <div className="w-px h-20 bg-white/30 shrink-0"></div>
-
-          <div className="space-y-3 text-white">
-            <div className="flex items-start gap-2">
-              <MapPin className="w-4 h-4 text-orange-300 shrink-0 mt-0.5" />
-              <p className="text-blue-100 text-xs leading-relaxed">
-                PARC HOUSE II, Unit 703, EDSA, Makati City, 1212
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-orange-300 shrink-0" />
-              <a 
-                href="mailto:info@erovoutika.ph" 
-                className="text-blue-100 hover:text-orange-300 transition-colors text-xs"
-              >
-                info@erovoutika.ph
-              </a>
-            </div>
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-orange-300 shrink-0" />
-              <a 
-                href="tel:+639061497307" 
-                className="text-blue-100 hover:text-orange-300 transition-colors text-xs"
-              >
-                +63 906 149 7307
-              </a>
-            </div>
-          </div>
         </div>
       </div>
 
