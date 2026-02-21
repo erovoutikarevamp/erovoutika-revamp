@@ -35,7 +35,7 @@ const modalOverlay = {
 
 const modalContent = {
   hidden: { opacity: 0, scale: 0.97, y: 16 },
-  show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring', stiffness: 280, damping: 28 } },
+  show: { opacity: 1, scale: 1, y: 0, transition: { type: 'spring' as const, stiffness: 280, damping: 28 } },
   exit: { opacity: 0, scale: 0.97, y: 16, transition: { duration: 0.18 } },
 }
 
