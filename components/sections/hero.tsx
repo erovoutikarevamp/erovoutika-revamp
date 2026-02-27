@@ -3,6 +3,9 @@
 import { ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useLanguage } from '@/lib/i18n/languageContext'
+import { Syne } from 'next/font/google'
+
+const syne = Syne({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap' })
 
 export function Hero() {
   const { t } = useLanguage()
@@ -25,20 +28,15 @@ export function Hero() {
           aria-hidden="true"
         >
           <defs>
-            {/* Base grid */}
             <pattern id="hero-grid" width="60" height="60" patternUnits="userSpaceOnUse">
               <path d="M 60 0 L 0 0 0 60" fill="none" stroke="currentColor" strokeWidth="0.4" strokeOpacity="0.045" />
             </pattern>
-
-            {/* Circuit traces pattern — larger tile with nodes and traces */}
             <pattern id="hero-circuit" width="240" height="240" patternUnits="userSpaceOnUse">
-              {/* Horizontal traces */}
               <line x1="0"   y1="60"  x2="80"  y2="60"  stroke="currentColor" strokeWidth="1"   strokeOpacity="0.07" />
               <line x1="100" y1="60"  x2="180" y2="60"  stroke="currentColor" strokeWidth="1"   strokeOpacity="0.07" />
               <line x1="0"   y1="180" x2="60"  y2="180" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.05" />
               <line x1="100" y1="180" x2="240" y2="180" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.05" />
               <line x1="140" y1="120" x2="240" y2="120" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.06" />
-              {/* Vertical traces */}
               <line x1="60"  y1="0"   x2="60"  y2="40"  stroke="currentColor" strokeWidth="1"   strokeOpacity="0.07" />
               <line x1="60"  y1="80"  x2="60"  y2="160" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.07" />
               <line x1="60"  y1="200" x2="60"  y2="240" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.05" />
@@ -46,14 +44,11 @@ export function Hero() {
               <line x1="180" y1="100" x2="180" y2="240" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.06" />
               <line x1="120" y1="0"   x2="120" y2="40"  stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.05" />
               <line x1="120" y1="80"  x2="120" y2="120" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.05" />
-              {/* Diagonal short traces */}
               <line x1="60"  y1="60"  x2="100" y2="60"  stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.06" />
               <line x1="180" y1="60"  x2="240" y2="60"  stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.05" />
-              {/* Corner brackets / L-joints */}
               <path d="M 80 40 L 80 60 L 100 60"  fill="none" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.08" strokeLinecap="round" />
               <path d="M 160 180 L 180 180 L 180 200" fill="none" stroke="currentColor" strokeWidth="1" strokeOpacity="0.07" strokeLinecap="round" />
               <path d="M 120 80 L 120 120 L 140 120"  fill="none" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.06" strokeLinecap="round" />
-              {/* Solder-pad nodes (circles) */}
               <circle cx="60"  cy="60"  r="3" fill="none" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.10" />
               <circle cx="180" cy="60"  r="3" fill="none" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.09" />
               <circle cx="60"  cy="180" r="3" fill="none" stroke="currentColor" strokeWidth="1"   strokeOpacity="0.08" />
@@ -64,7 +59,6 @@ export function Hero() {
               <circle cx="60"  cy="180" r="1.2" fill="currentColor" fillOpacity="0.05" />
               <circle cx="180" cy="180" r="1.2" fill="currentColor" fillOpacity="0.05" />
               <circle cx="120" cy="120" r="1"   fill="currentColor" fillOpacity="0.06" />
-              {/* Small IC-chip rectangle */}
               <rect x="152" y="92"  width="28" height="18" rx="2" fill="none" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.07" />
               <line x1="156" y1="92"  x2="156" y2="88"  stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.07" />
               <line x1="162" y1="92"  x2="162" y2="88"  stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.07" />
@@ -72,16 +66,12 @@ export function Hero() {
               <line x1="156" y1="110" x2="156" y2="114" stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.07" />
               <line x1="162" y1="110" x2="162" y2="114" stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.07" />
               <line x1="168" y1="110" x2="168" y2="114" stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.07" />
-              {/* Resistor symbol */}
               <rect x="26" y="56" width="20" height="8" rx="1.5" fill="none" stroke="currentColor" strokeWidth="0.8" strokeOpacity="0.07" />
-              {/* Via holes */}
               <circle cx="100" cy="180" r="4"   fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.06" />
               <circle cx="100" cy="180" r="2"   fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.06" />
               <circle cx="240" cy="120" r="3.5" fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.05" />
               <circle cx="240" cy="120" r="1.8" fill="none" stroke="currentColor" strokeWidth="0.6" strokeOpacity="0.05" />
             </pattern>
-
-            {/* Radial fade mask */}
             <radialGradient id="hero-fade" cx="50%" cy="50%" r="70%">
               <stop offset="0%"   stopColor="white" stopOpacity="0" />
               <stop offset="55%"  stopColor="white" stopOpacity="0.5" />
@@ -91,7 +81,6 @@ export function Hero() {
               <rect width="100%" height="100%" fill="url(#hero-fade)" />
             </mask>
           </defs>
-
           <rect width="100%" height="100%" fill="url(#hero-grid)" />
           <rect width="100%" height="100%" fill="url(#hero-circuit)" mask="url(#hero-mask)" />
         </svg>
@@ -180,11 +169,11 @@ export function Hero() {
                 <div className="absolute bottom-0 right-0 w-32 h-32 rounded-full blur-2xl opacity-30"
                   style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }} />
                 <div className="relative z-10 p-5 flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center justify-between gap-">
                     <h3 className="text-lg font-black text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
                       ROBOlution
                     </h3>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-orange-300 bg-orange-500/20 border border-orange-400/30 px-2 py-1 rounded-full">
+                    <span className="text-[7px] font-mono uppercase tracking-widest text-orange-300 bg-orange-500/20 border border-orange-400/30 px-1 py-1 rounded-full">
                       5th Edition
                     </span>
                   </div>
@@ -195,11 +184,10 @@ export function Hero() {
                     href="https://robolution.erovoutika.ph/home"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center text-sm font-bold text-orange-300 hover:text-orange-200 transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    className={`mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-orange-300 hover:text-orange-200 transition-colors ${syne.className}`}
                   >
                     Join ROBOlution
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
                   </a>
                 </div>
               </motion.div>
@@ -230,7 +218,7 @@ export function Hero() {
                     <h3 className="text-lg font-black text-white" style={{ fontFamily: "'Syne', sans-serif" }}>
                       EIRA
                     </h3>
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-orange-100 bg-white/10 border border-white/20 px-2 py-1 rounded-full">
+                    <span className="text-[7px] font-mono uppercase tracking-widest text-orange-100 bg-white/10 border border-white/20 px-2 py-1 rounded-full">
                       Certification
                     </span>
                   </div>
@@ -241,11 +229,10 @@ export function Hero() {
                     href="https://eira-erovoutika.vercel.app/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-flex items-center text-sm font-bold text-white hover:text-orange-100 transition-colors"
-                    style={{ fontFamily: "'DM Sans', sans-serif" }}
+                    className={`mt-1 inline-flex items-center gap-1.5 text-xs font-bold text-white hover:text-orange-100 transition-colors ${syne.className}`}
                   >
                     Get Certified
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-200" />
                   </a>
                 </div>
               </motion.div>
@@ -260,7 +247,6 @@ export function Hero() {
             transition={{ duration: 1, ease: 'easeOut', delay: 0.15 }}
             className="relative hidden lg:flex items-center justify-center select-none pointer-events-none"
           >
-            {/* Pulsating glow rings behind the logo */}
             <motion.div
               animate={{ scale: [1, 1.18, 1], opacity: [0.18, 0.06, 0.18] }}
               transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
@@ -281,21 +267,14 @@ export function Hero() {
                 background: 'radial-gradient(circle, rgba(59,130,246,0.25) 0%, transparent 70%)',
               }}
             />
-
-            {/* Static soft glow base */}
             <div
               className="absolute w-[460px] h-[460px] rounded-full blur-3xl"
               style={{
                 background: 'radial-gradient(circle, rgba(59,130,246,0.16) 0%, rgba(99,102,241,0.08) 55%, transparent 80%)',
               }}
             />
-
-            {/* Logo with slow breathe + pulse scale */}
             <motion.div
-              animate={{
-                opacity: [0.68, 0.88, 0.68],
-                scale: [1, 1.04, 1],
-              }}
+              animate={{ opacity: [0.68, 0.88, 0.68], scale: [1, 1.04, 1] }}
               transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
               className="relative w-[420px] h-[420px]"
             >
