@@ -1,5 +1,78 @@
 export const translations = {
   en: {
+    // ─────────────────────────────────────────────────────────────────────────────
+// Add this `helpWidget` block to your existing translations object
+// (both `en` and any other locale objects in your i18n file)
+// ─────────────────────────────────────────────────────────────────────────────
+
+helpWidget: {
+  // Trigger button
+  triggerTitle: 'Need Help?',
+  triggerSub: 'FAQs & Support',
+
+  // Panel header
+  title: 'Erovoutika Help',
+  subtitle: 'FAQs & support options',
+
+  // Search
+  searchPlaceholder: 'Search questions…',
+
+  // Greeting
+  greeting: '👋 Hi! Browse common questions below or search for something specific.',
+
+  // No results
+  noResults: 'No results found. Try different keywords or',
+  contactUs: 'contact us',
+
+  // Footer
+  moreHelp: 'Still need help?',
+  emailUs: 'Email us',
+  callUs: 'Call us',
+  contactForm: 'Contact form',
+
+  // Category labels
+  catAutomation: 'Automation & Robotics',
+  catTraining: 'Training & Education',
+  catSupport: 'Support & Maintenance',
+  catPricing: 'Pricing & Partnerships',
+
+  // ── Automation & Robotics ──
+  q1: 'How do I request a custom automation solution?',
+  a1: 'Share your business workflow through our contact form and our team will schedule a discovery call to recommend a tailored automation plan. We assess your current processes and design a scalable system that fits your needs and budget.',
+
+  q2: 'What industries do you serve with automation?',
+  a2: 'We work across manufacturing, logistics, agriculture, healthcare, retail, and more. Our solutions are designed to be adaptable — whether you run a small business or a large enterprise, we can engineer a system that works for you.',
+
+  q3: 'How long does it take to deploy an automation system?',
+  a3: 'Timelines vary by project complexity. Simple setups can be deployed in 2–4 weeks, while larger industrial systems may take 2–4 months. We provide a clear project timeline after the initial discovery call.',
+
+  // ── Training & Education ──
+  q4: 'Do you provide robotics training for schools and companies?',
+  a4: 'Yes. We offer STEM and robotics programs for K–12 schools and universities, as well as upskilling and certification tracks for corporate teams. Our curricula are hands-on and aligned with industry standards.',
+
+  q5: 'Are your training programs available online?',
+  a5: 'We offer both on-site and hybrid training formats. Select modules are available as self-paced online courses, while more advanced programs include in-person lab sessions for hands-on experience.',
+
+  q6: "Can training be customized for our company's tools?",
+  a6: 'Absolutely. We offer bespoke corporate training tailored to the specific equipment, software, and processes your team uses. Contact us to discuss a custom curriculum.',
+
+  // ── Support & Maintenance ──
+  q7: 'Can Erovoutika support after deployment?',
+  a7: 'Absolutely. We provide maintenance, optimization, and technical support packages so your systems stay reliable long-term. Our team is reachable via email, phone, and on-site visits depending on your support tier.',
+
+  q8: 'What does your maintenance package include?',
+  a8: 'Our packages include scheduled system health checks, firmware and software updates, priority response for critical issues, and access to our engineering team for troubleshooting. Plans are flexible based on your uptime requirements.',
+
+  q9: 'Is there a warranty on your robotics systems?',
+  a9: 'Yes. All systems come with a standard 12-month warranty covering hardware defects and software issues. Extended warranty and premium support contracts are also available.',
+
+  // ── Pricing & Partnerships ──
+  q10: 'How is pricing determined for custom projects?',
+  a10: 'Pricing is based on project scope, hardware requirements, software complexity, and support level. We provide a detailed quote after a consultation — no hidden fees, everything is outlined before we begin.',
+
+  q11: 'Do you offer partnership or reseller programs?',
+  a11: 'Yes. We welcome partnerships with schools, distributors, system integrators, and technology providers. Reach out via our contact form to explore collaboration opportunities.',
+},
     hero: {
       badge: "One-Stop-Shop Innovative Solutions",
       title: "Innovating the Future with",
@@ -1548,7 +1621,10 @@ export const translations = {
       addressText: "PARC HOUSE II, Unit 703, Epifanio de los Santos Avenue, Makati City, 1212 Metro Manila",
       phone: "Telefone"
     }
+    
   }
+  
+
 }
 
 export type TranslationKeys = typeof translations.en

@@ -3,12 +3,13 @@
 import { motion, useInView } from 'framer-motion'
 import { useRef } from 'react'
 import { useLanguage } from '@/lib/i18n/languageContext'
-import { Barlow_Condensed } from 'next/font/google'
+import { Barlow_Condensed, Syne } from 'next/font/google'
 import { Target, ArrowRight, GraduationCap, BookOpen, Cpu, Wrench, Building2, FlaskConical, Rocket, Eye, Heart } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
 const barlowCondensed = Barlow_Condensed({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' })
+const syne = Syne({ subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
 
 // ─── Photos ───────────────────────────────────────────────────────────────────
 const PHOTOS = [
@@ -104,13 +105,6 @@ export function About() {
     },
   ]
 
-  // Circle diameter
-  const D = 200   // diameter px
-  const OL = 60   // overlap px — how much adjacent circles overlap
-
-  // Total width of 3 overlapping circles
-  const totalW = D * 3 - OL * 2  // = 420px
-
   return (
     <>
       {/* ═══════════════════════════════════════════════════
@@ -174,7 +168,11 @@ export function About() {
                 {t.about.fullTitle}
               </h2>
               <p className="text-base text-gray-600 dark:text-slate-400 leading-relaxed">{t.about.description}</p>
-              <Link href="#contact" className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 group" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              {/* ── Get In Touch CTA ── */}
+              <Link
+                href="#contact"
+                className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 group ${syne.className}`}
+              >
                 {t.about.getInTouch}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
               </Link>
@@ -204,8 +202,6 @@ export function About() {
 
             {/* Icon row with horizontal connector line */}
             <div className="relative flex items-center justify-center">
-
-              {/* Horizontal gradient line: transparent → blue → orange → emerald → transparent, extends past edges */}
               <motion.div
                 initial={{ scaleX: 0, opacity: 0 }}
                 whileInView={{ scaleX: 1, opacity: 1 }}
@@ -224,7 +220,6 @@ export function About() {
                 }}
               />
 
-              {/* Icons */}
               <div className="relative z-10 grid grid-cols-3 w-full">
                 {TIMELINE.map((item, i) => (
                   <div key={item.num} className="flex justify-center">
@@ -251,8 +246,6 @@ export function About() {
             <div className="grid grid-cols-3 gap-6 mt-0">
               {TIMELINE.map((item, i) => (
                 <div key={item.num} className="flex flex-col items-center">
-
-                  {/* Vertical gradient connector line */}
                   <motion.div
                     initial={{ scaleY: 0 }}
                     whileInView={{ scaleY: 1 }}
@@ -261,8 +254,6 @@ export function About() {
                     style={{ transformOrigin: 'top', width: 2, height: 32 }}
                     className={`bg-gradient-to-b ${item.gradientBar} shrink-0`}
                   />
-
-                  {/* Card */}
                   <motion.div
                     initial={{ opacity: 0, y: 24 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -274,7 +265,6 @@ export function About() {
                     <h4 className={`${barlowCondensed.className} text-xl font-bold mb-2 ${item.accent}`}>{item.title}</h4>
                     <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed flex-1">{item.body}</p>
                   </motion.div>
-
                 </div>
               ))}
             </div>
@@ -316,7 +306,11 @@ export function About() {
               {t.about.notSure}{' '}
               <span className="text-gray-700 dark:text-slate-300 font-medium">{t.about.notSureHighlight}</span>
             </p>
-            <Link href="#contact" className="shrink-0 inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-xl transition-all duration-300 group" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+            {/* ── Talk to Us CTA ── */}
+            <Link
+              href="#contact"
+              className={`shrink-0 inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-xl transition-all duration-300 group ${syne.className}`}
+            >
               {t.about.whoWeServeCta}
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
             </Link>

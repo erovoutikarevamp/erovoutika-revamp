@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { Header } from './header'
 import { Footer } from './footer'
+import { HelpWidget } from './help-widget'
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -22,6 +23,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <Footer />
+      <HelpWidget />
     </>
   )
 }

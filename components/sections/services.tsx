@@ -1,7 +1,8 @@
 'use client'
 
-import { Barlow_Condensed } from 'next/font/google'
+import { Barlow_Condensed, Syne } from 'next/font/google'
 const barlowCondensed = Barlow_Condensed({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' })
+const syne = Syne({ subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
 
 import {
   Cpu, Bot, Wrench, ArrowRight, Trophy, BookOpen, ExternalLink,
@@ -82,42 +83,12 @@ export function Services() {
   ]
 
   const DIFFERENTIATORS = [
-    {
-      Icon: HardHat,
-      title: t.battleTestedTitle,
-      desc: t.battleTestedDesc,
-      side: 'left',
-    },
-    {
-      Icon: GitMerge,
-      title: t.endToEndTitle,
-      desc: t.endToEndDesc,
-      side: 'left',
-    },
-    {
-      Icon: BarChart3,
-      title: t.trackRecordTitle,
-      desc: t.trackRecordDesc,
-      side: 'left',
-    },
-    {
-      Icon: Handshake,
-      title: t.partnershipsTitle,
-      desc: t.partnershipsDesc,
-      side: 'right',
-    },
-    {
-      Icon: GraduationCap,
-      title: t.stemFocusTitle,
-      desc: t.stemFocusDesc,
-      side: 'right',
-    },
-    {
-      Icon: Globe,
-      title: t.globalTitle,
-      desc: t.globalDesc,
-      side: 'right',
-    },
+    { Icon: HardHat,      title: t.battleTestedTitle,  desc: t.battleTestedDesc,  side: 'left' },
+    { Icon: GitMerge,     title: t.endToEndTitle,      desc: t.endToEndDesc,      side: 'left' },
+    { Icon: BarChart3,    title: t.trackRecordTitle,   desc: t.trackRecordDesc,   side: 'left' },
+    { Icon: Handshake,    title: t.partnershipsTitle,  desc: t.partnershipsDesc,  side: 'right' },
+    { Icon: GraduationCap,title: t.stemFocusTitle,     desc: t.stemFocusDesc,     side: 'right' },
+    { Icon: Globe,        title: t.globalTitle,        desc: t.globalDesc,        side: 'right' },
   ]
 
   const scrollToContact = () => {
@@ -325,7 +296,7 @@ export function Services() {
                     </div>
                   </div>
                   <div className="flex flex-col flex-1 p-5 gap-2">
-                    <h3 className="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 leading-snug" style={{ fontFamily: "'Syne', sans-serif" }}>
+                    <h3 className={`text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-200 leading-snug ${syne.className}`}>
                       {service.title}
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed flex-1">{service.description}</p>
@@ -398,9 +369,14 @@ export function Services() {
                     ))}
                   </ul>
                   <div className="pt-3 border-t border-gray-100 dark:border-slate-700">
-                    <a href="https://robolution.erovoutika.ph/home" target="_blank" rel="noopener noreferrer"
-                      className="group/btn self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-xs font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
-                      style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)', fontFamily: "'DM Sans', sans-serif" }}>
+                    {/* ── Visit ROBOlution CTA ── */}
+                    <a
+                      href="https://robolution.erovoutika.ph/home"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group/btn self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-xs font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${syne.className}`}
+                      style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)' }}
+                    >
                       {t.robolutionCta}
                       <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-200" />
                     </a>
@@ -467,9 +443,14 @@ export function Services() {
                     ))}
                   </ul>
                   <div className="pt-3 border-t border-gray-100 dark:border-slate-700">
-                    <a href="https://eira-erovoutika.vercel.app/" target="_blank" rel="noopener noreferrer"
-                      className="group/btn self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-xs font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg"
-                      style={{ background: 'linear-gradient(135deg, #1d4ed8, #6366f1)', fontFamily: "'DM Sans', sans-serif" }}>
+                    {/* ── Visit EIRA CTA ── */}
+                    <a
+                      href="https://eira-erovoutika.vercel.app/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`group/btn self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-xs font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${syne.className}`}
+                      style={{ background: 'linear-gradient(135deg, #1d4ed8, #6366f1)' }}
+                    >
                       {t.eiraCta}
                       <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-200" />
                     </a>
@@ -490,7 +471,14 @@ export function Services() {
             style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #312e81 100%)' }}
           >
             <div className="absolute inset-0 opacity-[0.06]">
-              <svg className="w-full h-full"><defs><pattern id="ctugrid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.8" /></pattern></defs><rect width="100%" height="100%" fill="url(#ctugrid)" /></svg>
+              <svg className="w-full h-full">
+                <defs>
+                  <pattern id="ctugrid" width="40" height="40" patternUnits="userSpaceOnUse">
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" strokeWidth="0.8" />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#ctugrid)" />
+              </svg>
             </div>
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6 px-10 py-10">
               <div className="text-center md:text-left space-y-2">
@@ -501,10 +489,10 @@ export function Services() {
                   {t.ctaSubtitle}
                 </p>
               </div>
+              {/* ── Start Conversation CTA ── */}
               <button
                 onClick={scrollToContact}
-                className="group flex-shrink-0 inline-flex items-center gap-2 px-7 py-3.5 bg-white hover:bg-orange-500 text-blue-700 hover:text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-[1.02]"
-                style={{ fontFamily: "'DM Sans', sans-serif" }}
+                className={`group flex-shrink-0 inline-flex items-center gap-2 px-7 py-3.5 bg-white hover:bg-orange-500 text-blue-700 hover:text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-[1.02] ${syne.className}`}
               >
                 {t.ctaButton}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
