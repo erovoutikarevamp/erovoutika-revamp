@@ -123,7 +123,7 @@ export default function RichTextEditor({
     const incoming = value || ''
     const normalizedCurrent = current === '<p></p>' ? '' : current
     if (normalizedCurrent !== incoming) {
-      editor.commands.setContent(incoming, false)
+      editor.commands.setContent(incoming, { emitUpdate: false })
     }
   }, [value, editor])
 
