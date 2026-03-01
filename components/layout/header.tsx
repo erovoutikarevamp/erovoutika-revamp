@@ -87,7 +87,7 @@ export function Header() {
             animate={{
               backgroundColor: headerBg,
               backdropFilter: scrolled ? 'blur(18px)' : 'blur(0px)',
-              WebkitBackdropFilter: scrolled ? 'blur(18px)' : 'blur(0px)',
+              backdropFilter: scrolled ? 'blur(18px)' : 'blur(0px)',
               boxShadow: headerShadow,
               borderBottomColor: headerBorderColor,
             }}
