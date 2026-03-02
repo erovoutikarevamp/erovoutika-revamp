@@ -139,12 +139,8 @@ export default function MessagesPage() {
       {/* ── Header ── */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 dark:border-white/[0.07] pb-6">
         <div>
-          <div className="flex items-center gap-2 mb-2 font-mono text-[9px] tracking-[0.3em] uppercase text-amber-500">
-            <Terminal className="w-3 h-3" />
-            <span>Root://Comm_Link/Inbound</span>
-          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
-            Inbound Messages
+             Messages
             {messages.filter(m => !m.is_read).length > 0 && (
               <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded bg-amber-500 text-black animate-pulse">
                 {messages.filter(m => !m.is_read).length} NEW_PACKETS
@@ -157,8 +153,8 @@ export default function MessagesPage() {
       {/* ── Telemetry Grid ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
         {[
-          { label: 'TOTAL_TRAFFIC', val: messages.length, icon: Inbox, color: 'text-blue-500' },
-          { label: 'UNREAD_FLAGS', val: messages.filter(m => !m.is_read).length, icon: ShieldAlert, color: 'text-amber-500' },
+          { label: 'TOTAL', val: messages.length, icon: Inbox, color: 'text-blue-500' },
+          { label: 'UNREAD', val: messages.filter(m => !m.is_read).length, icon: ShieldAlert, color: 'text-amber-500' },
           { label: 'ARCHIVED', val: messages.filter(m => m.is_read).length, icon: Eye, color: 'text-emerald-500' },
         ].map((stat, i) => (
           <div key={i} className="relative bg-white dark:bg-[#0d1526] border border-gray-200 dark:border-white/[0.07] p-4 group overflow-hidden">
@@ -266,16 +262,16 @@ export default function MessagesPage() {
                       <Button variant="outline" size="sm" onClick={() => handleMarkRead(msg.id, msg.is_read)}
                               className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:text-amber-500">
                         {msg.is_read ? <EyeOff className="w-3 h-3 mr-2" /> : <Eye className="w-3 h-3 mr-2" />}
-                        {msg.is_read ? 'Flag_Unread' : 'Mark_As_Seen'}
+                        {msg.is_read ? 'Unread' : 'Mark_As_Seen'}
                       </Button>
                       <a href={`mailto:${msg.email}`}>
                         <Button variant="outline" size="sm" className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:text-blue-500">
-                          <Mail className="w-3 h-3 mr-2" /> Outbound_Reply
+                          <Mail className="w-3 h-3 mr-2" /> Reply
                         </Button>
                       </a>
                       <Button variant="outline" size="sm" onClick={() => setDeleteId(msg.id)}
                               className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:bg-red-500/10 hover:text-red-500">
-                        <Trash2 className="w-3 h-3 mr-2" /> Purge
+                        <Trash2 className="w-3 h-3 mr-2" /> Delete
                       </Button>
                     </div>
                   </div>
@@ -286,19 +282,19 @@ export default function MessagesPage() {
         )}
       </div>
 
-      {/* ── Purge Dialog ── */}
+      {/* ── Delete Dialog ── */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent className="dark:bg-[#0d1526] dark:border-white/[0.07]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="font-mono uppercase text-red-500 text-sm tracking-widest">Confirm_Purge?</AlertDialogTitle>
+            <AlertDialogTitle className="font-mono uppercase text-red-500 text-sm tracking-widest">Confirm Deletion?</AlertDialogTitle>
             <AlertDialogDescription className="font-mono text-[11px]">
               This data packet will be permanently deleted from the communication buffer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="font-mono text-[10px] uppercase">Abort</AlertDialogCancel>
+            <AlertDialogCancel className="font-mono text-[10px] uppercase">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 font-mono text-[10px] uppercase tracking-widest">
-              Execute_Delete
+              Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

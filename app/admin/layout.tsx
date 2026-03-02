@@ -166,7 +166,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               src="/erovoutika-logo.png"
               alt="Erovoutika"
               width={130} height={40}
-              className="h-8 w-auto dark:brightness-0 dark:invert dark:opacity-90"
+              className="h-18 w-auto dark:brightness-0 dark:invert dark:opacity-90"
             />
             <button
               onClick={() => setIsSidebarOpen(false)}

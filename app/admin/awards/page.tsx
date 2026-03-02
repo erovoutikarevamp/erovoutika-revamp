@@ -303,11 +303,11 @@ export default function AwardsManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle className="font-mono uppercase text-sm tracking-widest">Confirm Deletion</AlertDialogTitle>
             <AlertDialogDescription className="text-xs italic dark:text-slate-400">
-              Warning: This action will purge the award record from the central database.
+              Warning: This action will erase the award record from the central database.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-none font-mono text-[10px] uppercase">Abort</AlertDialogCancel>
+            <AlertDialogCancel className="rounded-none font-mono text-[10px] uppercase">Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 dark:bg-red-900 dark:hover:bg-red-800 rounded-none font-mono text-[10px] uppercase">
               Proceed
             </AlertDialogAction>
