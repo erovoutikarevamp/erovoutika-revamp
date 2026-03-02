@@ -8,18 +8,22 @@ import { useEffect, useRef } from 'react'
 
 const syne = Syne({ subsets: ['latin'], weight: ['600', '700', '800'], display: 'swap' })
 
-// ─── Animated Circuit Canvas (unchanged from original) ────────────────────────
+// ─── Animated Circuit Canvas ──────────────────────────────────────────────────
 function CircuitBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { alpha: true })
     if (!ctx) return
+
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+    const isLowEnd = typeof navigator.hardwareConcurrency !== 'undefined' && navigator.hardwareConcurrency <= 4
 
     let animId: number
     let W = 0, H = 0
+    let frameCount = 0
 
     type Node = {
       x: number; y: number
@@ -28,11 +32,19 @@ function CircuitBackground() {
     }
 
     const NODES: Node[] = []
-    const NODE_COUNT = 55
-    const MAX_DIST = 160
+    const NODE_COUNT   = isMobile ? 18  : isLowEnd ? 30 : 55
+    const MAX_DIST     = isMobile ? 100 : 160
     const PULSE_RADIUS = 5
+    const FRAME_SKIP   = isMobile ? 2 : 1
 
-    const resize = () => { W = canvas.width = canvas.offsetWidth; H = canvas.height = canvas.offsetHeight }
+    const resize = () => {
+      const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1 : 2)
+      W = canvas.offsetWidth
+      H = canvas.offsetHeight
+      canvas.width  = W * dpr
+      canvas.height = H * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
 
     const spawnNodes = () => {
       NODES.length = 0
@@ -49,8 +61,12 @@ function CircuitBackground() {
     const isDark = () => document.documentElement.classList.contains('dark')
 
     const draw = () => {
+      animId = requestAnimationFrame(draw)
+      frameCount++
+      if (frameCount % FRAME_SKIP !== 0) return
+
       ctx.clearRect(0, 0, W, H)
-      const dark = isDark()
+      const dark       = isDark()
       const nodeColor  = dark ? 'rgba(96,165,250,'  : 'rgba(37,99,235,'
       const lineColor  = dark ? 'rgba(96,165,250,'  : 'rgba(37,99,235,'
       const pulseColor = dark ? 'rgba(249,115,22,'  : 'rgba(234,88,12,'
@@ -61,11 +77,13 @@ function CircuitBackground() {
         if (n.y < 0 || n.y > H) n.vy *= -1
         n.pulse = (n.pulse + n.pulseSpeed) % 1
 
-        const glowAlpha = Math.sin(n.pulse * Math.PI) * 0.35
-        ctx.beginPath()
-        ctx.arc(n.x, n.y, n.r + PULSE_RADIUS * Math.sin(n.pulse * Math.PI), 0, Math.PI * 2)
-        ctx.fillStyle = `${pulseColor}${glowAlpha})`
-        ctx.fill()
+        if (!isMobile) {
+          const glowAlpha = Math.sin(n.pulse * Math.PI) * 0.35
+          ctx.beginPath()
+          ctx.arc(n.x, n.y, n.r + PULSE_RADIUS * Math.sin(n.pulse * Math.PI), 0, Math.PI * 2)
+          ctx.fillStyle = `${pulseColor}${glowAlpha})`
+          ctx.fill()
+        }
 
         ctx.beginPath()
         ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2)
@@ -76,38 +94,43 @@ function CircuitBackground() {
       for (let i = 0; i < NODES.length; i++) {
         for (let j = i + 1; j < NODES.length; j++) {
           const a = NODES[i], b = NODES[j]
-          const dist = Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2)
+          const dx = a.x - b.x, dy = a.y - b.y
+          const dist = Math.sqrt(dx * dx + dy * dy)
           if (dist > MAX_DIST) continue
           const alpha = (1 - dist / MAX_DIST) * 0.22
           const midX = a.x, midY = b.y
           ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(midX, midY); ctx.lineTo(b.x, b.y)
           ctx.strokeStyle = `${lineColor}${alpha})`; ctx.lineWidth = 0.8; ctx.stroke()
-          ctx.beginPath(); ctx.arc(midX, midY, 1.5, 0, Math.PI * 2)
-          ctx.fillStyle = `${lineColor}${alpha * 1.5})`; ctx.fill()
+          if (!isMobile) {
+            ctx.beginPath(); ctx.arc(midX, midY, 1.5, 0, Math.PI * 2)
+            ctx.fillStyle = `${lineColor}${alpha * 1.5})`; ctx.fill()
+          }
         }
       }
-      animId = requestAnimationFrame(draw)
     }
 
     resize(); spawnNodes(); draw()
-    const ro = new ResizeObserver(resize); ro.observe(canvas)
-    const mo = new MutationObserver(() => {})
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] })
-    return () => { cancelAnimationFrame(animId); ro.disconnect(); mo.disconnect() }
+    const ro = new ResizeObserver(resize)
+    ro.observe(canvas)
+    return () => { cancelAnimationFrame(animId); ro.disconnect() }
   }, [])
 
   return (
     <>
-      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" style={{ opacity: 0.85 }} />
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full pointer-events-none"
+        style={{ opacity: 0.85, willChange: 'contents' }}
+      />
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.08]"
+        className="absolute inset-0 pointer-events-none opacity-[0.06] dark:opacity-[0.08] hidden md:block"
         style={{
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='24' viewBox='0 0 28 24'%3E%3Cpath fill='none' stroke='%232563eb' stroke-width='0.4' d='M14 0l7 4v8l-7 4-7-4V4z'/%3E%3Cpath fill='none' stroke='%232563eb' stroke-width='0.4' d='M0 12l7 4 7-4-7-4z'/%3E%3C/svg%3E")`,
           backgroundSize: '28px 24px',
         }}
       />
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.05]"
+        className="absolute inset-0 pointer-events-none opacity-[0.04] dark:opacity-[0.05] hidden md:block"
         style={{ background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(37,99,235,0.1) 2px, rgba(37,99,235,0.1) 4px)' }}
       />
     </>
@@ -118,18 +141,6 @@ function CircuitBackground() {
 export function Hero() {
   const { t } = useLanguage()
 
-  /**
-   * SCROLL ARCHITECTURE
-   * -------------------
-   * A 300vh tall div acts as the scroll track.
-   * The inner <section> is sticky so it stays viewport-locked.
-   * scrollYProgress 0→1 maps to the full 300vh.
-   *
-   * Stage 1  [0.00 – 0.18]  Logo only, circuit canvas live
-   * Stage 2  [0.18 – 0.35]  Nav slides in (driven by header.tsx reading scrollY)
-   * Stage 3  [0.35 – 0.70]  Hero content assembles from all directions
-   * Stage 4  [0.70 – 1.00]  Parallax exit — content floats up + fades
-   */
   const containerRef = useRef<HTMLDivElement>(null)
 
   const { scrollYProgress } = useScroll({
@@ -137,69 +148,52 @@ export function Hero() {
     offset: ['start start', 'end end'],
   })
 
-  // Gentle spring for buttery feel
-  const s = useSpring(scrollYProgress, { stiffness: 55, damping: 16 })
+  // Stiffer spring = fewer frames to settle = smoother on mobile
+  const s = useSpring(scrollYProgress, { stiffness: 80, damping: 20, restDelta: 0.001 })
 
-  // ── Intro logo (center screen, stage 1-2) ─────────────────────────────────
   const introOpacity = useTransform(s, [0, 0.06, 0.32, 0.44], [0, 1, 1, 0])
   const introScale   = useTransform(s, [0, 0.06, 0.32, 0.44], [0.5, 1.05, 1, 0.85])
 
-  // ── Badge (drops from top) ────────────────────────────────────────────────
   const badgeOpacity = useTransform(s, [0.36, 0.50], [0, 1])
   const badgeY       = useTransform(s, [0.36, 0.50], [-28, 0])
 
-  // ── Headline (slides from left) ───────────────────────────────────────────
   const headlineOpacity = useTransform(s, [0.40, 0.56], [0, 1])
   const headlineX       = useTransform(s, [0.40, 0.56], [-50, 0])
 
-  // ── Credibility line (fades up) ───────────────────────────────────────────
   const credOpacity = useTransform(s, [0.48, 0.60], [0, 1])
   const credY       = useTransform(s, [0.48, 0.60], [16, 0])
 
-  // ── Card 1 (rises from below-left) ───────────────────────────────────────
   const card1Opacity = useTransform(s, [0.52, 0.64], [0, 1])
   const card1Y       = useTransform(s, [0.52, 0.64], [44, 0])
   const card1X       = useTransform(s, [0.52, 0.64], [-18, 0])
 
-  // ── Card 2 (rises from below-right) ──────────────────────────────────────
   const card2Opacity = useTransform(s, [0.56, 0.68], [0, 1])
   const card2Y       = useTransform(s, [0.56, 0.68], [44, 0])
   const card2X       = useTransform(s, [0.56, 0.68], [18, 0])
 
-  // ── Right logo watermark (slides from right) ──────────────────────────────
   const rightOpacity = useTransform(s, [0.42, 0.62], [0, 1])
   const rightX       = useTransform(s, [0.42, 0.62], [70, 0])
 
-  // ── Parallax exit (stage 4) ───────────────────────────────────────────────
   const exitY       = useTransform(s, [0.70, 1], ['0%', '18%'])
   const exitOpacity = useTransform(s, [0.70, 0.88, 1], [1, 1, 0])
 
-  // ── Scroll indicator (visible only during stage 1-2) ─────────────────────
   const indicatorOpacity = useTransform(s, [0, 0.06, 0.30, 0.42], [0, 1, 1, 0])
 
-  // ── Ambient orb parallax ──────────────────────────────────────────────────
   const orbY = useTransform(s, [0, 1], ['0%', '12%'])
 
-  const scrollToStage2 = () => {
-    if (!containerRef.current) return
-    const trackH = containerRef.current.offsetHeight
-    window.scrollTo({ top: trackH * 0.22, behavior: 'smooth' })
-  }
-
   return (
-    // ── 300vh scroll track ──────────────────────────────────────────────────
     <div ref={containerRef} style={{ height: '300vh' }}>
-
-      {/* ── Sticky viewport ────────────────────────────────────────────────── */}
       <section className="sticky top-0 h-screen flex items-center overflow-hidden bg-white dark:bg-[#050A14] transition-colors duration-500">
 
-        {/* Circuit canvas — always visible */}
         <div className="absolute inset-0">
           <CircuitBackground />
         </div>
 
-        {/* Ambient orbs */}
-        <motion.div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ y: orbY }}>
+        {/* Ambient orbs — desktop only, blur-3xl creates expensive compositor layers on mobile */}
+        <motion.div
+          className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block"
+          style={{ y: orbY }}
+        >
           <div className="absolute -top-40 -left-32 w-[32rem] h-[32rem] rounded-full blur-3xl opacity-[0.08] dark:opacity-[0.14]"
             style={{ background: 'radial-gradient(circle, #3b82f6 0%, rgba(59,130,246,0.3) 40%, transparent 70%)' }} />
           <div className="absolute -bottom-24 right-1/3 w-80 h-80 rounded-full blur-3xl opacity-[0.07] dark:opacity-[0.12]"
@@ -208,26 +202,33 @@ export function Hero() {
             style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 65%)' }} />
         </motion.div>
 
-        {/* ── STAGE 1: Intro logo — centered solo ──────────────────────────── */}
+        {/* Lightweight static gradient for mobile — no blur, no motion */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none md:hidden">
+          <div
+            className="absolute -top-40 -left-32 w-64 h-64 rounded-full opacity-[0.06]"
+            style={{ background: 'radial-gradient(circle, #3b82f6 0%, transparent 70%)' }}
+          />
+        </div>
+
+        {/* STAGE 1: Intro logo */}
         <motion.div
           style={{ opacity: introOpacity, scale: introScale }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
         >
           <div className="relative w-52 h-52 md:w-64 md:h-64 lg:w-72 lg:h-72">
-            {/* Breathing rings */}
+            {/* Breathing rings — desktop only */}
             <motion.div
               animate={{ scale: [1, 1.25, 1], opacity: [0.22, 0.05, 0.22] }}
               transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
-              className="absolute inset-[-20%] rounded-full"
+              className="absolute inset-[-20%] rounded-full hidden md:block"
               style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.3) 0%, rgba(249,115,22,0.12) 50%, transparent 70%)' }}
             />
             <motion.div
               animate={{ scale: [1, 1.45, 1], opacity: [0.14, 0.03, 0.14] }}
               transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut', delay: 0.55 }}
-              className="absolute inset-[-30%] rounded-full"
+              className="absolute inset-[-30%] rounded-full hidden md:block"
               style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 65%)' }}
             />
-            {/* Logo — light / dark */}
             <img
               src="/ero1.png" alt="Erovoutika" aria-hidden="true"
               className="absolute inset-0 w-full h-full object-contain dark:hidden"
@@ -241,21 +242,16 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* ── STAGE 3: Full hero content assembles ─────────────────────────── */}
+        {/* STAGE 3: Full hero content */}
         <motion.div
           style={{ y: exitY, opacity: exitOpacity }}
           className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-12 pt-8 pb-24"
         >
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-            {/* LEFT COLUMN */}
             <div className="flex flex-col gap-6 lg:gap-7">
 
-              {/* Badge — drops from top */}
-              <motion.div
-                style={{ opacity: badgeOpacity, y: badgeY }}
-                className="inline-flex self-start"
-              >
+              <motion.div style={{ opacity: badgeOpacity, y: badgeY }} className="inline-flex self-start">
                 <span className="flex items-center gap-2 px-4 py-2 rounded-lg border border-blue-400/40 dark:border-blue-500/35 bg-blue-500/10 dark:bg-blue-500/15 text-blue-700 dark:text-blue-300 text-xs font-mono tracking-widest uppercase shadow-[0_0_20px_rgba(37,99,235,0.12)]">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
@@ -265,7 +261,6 @@ export function Hero() {
                 </span>
               </motion.div>
 
-              {/* Headline — slides from left */}
               <motion.h1
                 style={{
                   opacity: headlineOpacity,
@@ -286,7 +281,6 @@ export function Hero() {
                 </span>
               </motion.h1>
 
-              {/* Credibility — fades up */}
               <motion.p
                 style={{ opacity: credOpacity, y: credY }}
                 className="text-xs text-gray-400/90 dark:text-slate-500 font-mono tracking-wide uppercase border-l-2 border-blue-500/60 dark:border-blue-400/50 pl-4"
@@ -294,14 +288,11 @@ export function Hero() {
                 Trusted by engineers & institutions across 3 continents
               </motion.p>
 
-              {/* Cards */}
               <div className="grid sm:grid-cols-2 gap-4 pt-2">
 
-                {/* ROBOcrabs — rises from below-left */}
                 <motion.div
                   style={{ opacity: card1Opacity, y: card1Y, x: card1X }}
                   className="group relative rounded-xl overflow-hidden border border-blue-400/25 dark:border-blue-500/20 hover:border-blue-400/50 transition-all duration-300 hover:shadow-[0_4px_32px_rgba(37,99,235,0.22)] dark:hover:shadow-[0_0_28px_rgba(59,130,246,0.15)]"
-                  // inline bg so Framer doesn't see a conflict
                 >
                   <div className="absolute inset-0" style={{ background: 'linear-gradient(145deg, #0c1a3a 0%, #0f2d6b 55%, #1a3fa0 100%)' }} />
                   <div className="absolute inset-0 opacity-[0.22] group-hover:opacity-[0.35] transition-opacity duration-500"
@@ -330,7 +321,6 @@ export function Hero() {
                   </div>
                 </motion.div>
 
-                {/* EIRA — rises from below-right */}
                 <motion.div
                   style={{ opacity: card2Opacity, y: card2Y, x: card2X }}
                   className="group relative rounded-xl overflow-hidden border border-orange-400/25 dark:border-orange-500/20 hover:border-orange-400/50 transition-all duration-300 hover:shadow-[0_4px_28px_rgba(234,88,12,0.2)] dark:hover:shadow-[0_0_24px_rgba(249,115,22,0.15)]"
@@ -357,7 +347,7 @@ export function Hero() {
               </div>
             </div>
 
-            {/* RIGHT — Logo watermark, slides in from right */}
+            {/* RIGHT — desktop only */}
             <motion.div
               style={{ opacity: rightOpacity, x: rightX }}
               className="relative hidden lg:flex items-center justify-center select-none pointer-events-none"
@@ -385,7 +375,6 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* ── Scroll nudge indicator (stage 1 only) ────────────────────────── */}
         <motion.div
           style={{ opacity: indicatorOpacity }}
           animate={{ y: [0, 10, 0] }}
