@@ -7,11 +7,14 @@ const syne = Syne({ subsets: ['latin'], weight: ['500', '600', '700'], display: 
 import {
   Cpu, Bot, Wrench, ArrowRight, Trophy, BookOpen, ExternalLink,
   HardHat, GitMerge, BarChart3, Handshake, GraduationCap, Globe,
-  FlaskConical, Sparkles, CalendarDays, Headset,
+  FlaskConical, Sparkles, CalendarDays, Headset, MapPin, Calendar,
 } from 'lucide-react'
 import { motion, type Variants } from 'framer-motion'
 import Image from 'next/image'
 import { useLanguage } from '@/lib/i18n/languageContext'
+
+// ─── Shared viewport config — once: false so animations replay on every scroll pass ───
+const VP = { once: false, margin: '-80px' } as const
 
 const container: Variants = {
   hidden: { opacity: 0 },
@@ -83,12 +86,12 @@ export function Services() {
   ]
 
   const DIFFERENTIATORS = [
-    { Icon: HardHat,      title: t.battleTestedTitle,  desc: t.battleTestedDesc,  side: 'left' },
-    { Icon: GitMerge,     title: t.endToEndTitle,      desc: t.endToEndDesc,      side: 'left' },
-    { Icon: BarChart3,    title: t.trackRecordTitle,   desc: t.trackRecordDesc,   side: 'left' },
-    { Icon: Handshake,    title: t.partnershipsTitle,  desc: t.partnershipsDesc,  side: 'right' },
-    { Icon: GraduationCap,title: t.stemFocusTitle,     desc: t.stemFocusDesc,     side: 'right' },
-    { Icon: Globe,        title: t.globalTitle,        desc: t.globalDesc,        side: 'right' },
+    { Icon: HardHat,       title: t.battleTestedTitle,  desc: t.battleTestedDesc,  side: 'left'  },
+    { Icon: GitMerge,      title: t.endToEndTitle,      desc: t.endToEndDesc,      side: 'left'  },
+    { Icon: BarChart3,     title: t.trackRecordTitle,   desc: t.trackRecordDesc,   side: 'left'  },
+    { Icon: Handshake,     title: t.partnershipsTitle,  desc: t.partnershipsDesc,  side: 'right' },
+    { Icon: GraduationCap, title: t.stemFocusTitle,     desc: t.stemFocusDesc,     side: 'right' },
+    { Icon: Globe,         title: t.globalTitle,        desc: t.globalDesc,        side: 'right' },
   ]
 
   const scrollToContact = () => {
@@ -100,7 +103,7 @@ export function Services() {
   const rightItems = DIFFERENTIATORS.filter(d => d.side === 'right')
 
   return (
-    <section className="bg-gray-50 dark:bg-slate-900 overflow-hidden">
+    <section className="bg-white dark:bg-[#050A14] overflow-hidden transition-colors duration-500">
 
       {/* ══════════════════════════════════════════════════════════
           BLOCK 1 — What Sets Us Apart
@@ -111,7 +114,7 @@ export function Services() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={VP}
             transition={{ duration: 0.6 }}
             className="text-center mb-16 space-y-3"
           >
@@ -133,12 +136,12 @@ export function Services() {
                   key={d.title}
                   initial={{ opacity: 0, x: -28 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={VP}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="flex items-start gap-4 lg:flex-row-reverse lg:text-right group"
                 >
-                  <div className="shrink-0 w-14 h-14 rounded-full bg-[#1d3a6e] dark:bg-slate-800 group-hover:bg-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 border border-blue-800/30 dark:border-slate-600">
-                    <d.Icon className="w-6 h-6 text-white" />
+                  <div className="shrink-0 w-14 h-14 rounded-full bg-[#0f2d6b] dark:bg-[#0c1a3a] group-hover:bg-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 border border-blue-700/40 dark:border-blue-500/20">
+                    <d.Icon className="w-6 h-6 text-blue-200" />
                   </div>
                   <div className="space-y-1 flex-1">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">{d.title}</h4>
@@ -152,7 +155,7 @@ export function Services() {
             <motion.div
               initial={{ opacity: 0, scale: 0.85 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
+              viewport={VP}
               transition={{ duration: 0.7, ease: [0.25, 0.1, 0.25, 1] }}
               className="flex items-center justify-center py-8 lg:py-0"
             >
@@ -209,9 +212,9 @@ export function Services() {
                   </motion.g>
                 </motion.svg>
                 {[
-                  { x: '8%', y: '18%', size: 6, delay: 0 },
+                  { x: '8%',  y: '18%', size: 6, delay: 0   },
                   { x: '88%', y: '12%', size: 5, delay: 0.5 },
-                  { x: '4%', y: '58%', size: 4, delay: 1.0 },
+                  { x: '4%',  y: '58%', size: 4, delay: 1.0 },
                   { x: '92%', y: '62%', size: 5, delay: 1.5 },
                   { x: '50%', y: '92%', size: 4, delay: 0.8 },
                 ].map((dot, i) => (
@@ -233,12 +236,12 @@ export function Services() {
                   key={d.title}
                   initial={{ opacity: 0, x: 28 }}
                   whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
+                  viewport={VP}
                   transition={{ duration: 0.5, delay: i * 0.1 }}
                   className="flex items-start gap-4 group"
                 >
-                  <div className="shrink-0 w-14 h-14 rounded-full bg-[#1d3a6e] dark:bg-slate-800 group-hover:bg-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 border border-blue-800/30 dark:border-slate-600">
-                    <d.Icon className="w-6 h-6 text-white" />
+                  <div className="shrink-0 w-14 h-14 rounded-full bg-[#0f2d6b] dark:bg-[#0c1a3a] group-hover:bg-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-all duration-300 border border-blue-700/40 dark:border-blue-500/20">
+                    <d.Icon className="w-6 h-6 text-blue-200" />
                   </div>
                   <div className="space-y-1 flex-1">
                     <h4 className="text-sm font-bold text-gray-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">{d.title}</h4>
@@ -255,13 +258,13 @@ export function Services() {
       {/* ══════════════════════════════════════════════════════════
           BLOCK 2 — What We Offer + Platforms + CTA
       ══════════════════════════════════════════════════════════ */}
-      <div className="py-24 border-t border-gray-200 dark:border-slate-700/60">
+      <div className="py-24 border-t border-gray-200 dark:border-blue-900/30">
         <div className="container mx-auto px-6 max-w-7xl">
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={VP}
             transition={{ duration: 0.6 }}
             className="max-w-3xl mx-auto text-center mb-20 space-y-4"
           >
@@ -282,12 +285,12 @@ export function Services() {
             variants={container}
             initial="hidden"
             whileInView="show"
-            viewport={{ once: true }}
+            viewport={VP}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-20"
           >
             {services.map((service) => (
               <motion.div key={service.key} variants={item} className="h-full">
-                <div className="group h-full flex flex-col rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500">
+                <div className="group h-full flex flex-col rounded-2xl border border-gray-200 dark:border-blue-900/30 bg-white dark:bg-[#0a1628] overflow-hidden hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500/50">
                   <div className="relative h-40 overflow-hidden flex-shrink-0">
                     <Image src={SERVICE_IMAGES[service.key]} alt={service.title} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
@@ -300,7 +303,7 @@ export function Services() {
                       {service.title}
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-slate-400 leading-relaxed flex-1">{service.description}</p>
-                    <div className="pt-3 mt-auto border-t border-gray-100 dark:border-slate-700">
+                    <div className="pt-3 mt-auto border-t border-gray-100 dark:border-blue-900/30">
                       <span className="text-[11px] text-blue-600 dark:text-blue-400 font-medium">{service.outcome}</span>
                     </div>
                   </div>
@@ -311,65 +314,72 @@ export function Services() {
 
           {/* Platforms & Initiatives */}
           <CategoryLabel label={t.services.sectionPlatforms} />
-          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={VP}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+          >
 
-            {/* ── ROBOlution ── */}
+            {/* ── ROBOcrabs ── */}
             <motion.div variants={item}>
-              <div className="group h-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:border-orange-400 dark:hover:border-orange-500">
-                <div
-                  className="relative h-56 overflow-hidden"
-                  style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%)' }}
-                >
+              <div className="group h-full rounded-2xl border border-gray-200 dark:border-blue-900/30 bg-white dark:bg-[#0a1628] overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500/50">
+
+                <div className="relative h-56 overflow-hidden bg-[#0c1a3a]">
                   <Image
-                    src={ROBOLUTION_HERO}
-                    alt="ROBOlution Competition"
+                    src="/robocrabs.jpg"
+                    alt="ROBOcrabs Competition"
                     fill
                     priority
                     sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover opacity-30 group-hover:opacity-40 group-hover:scale-105 transition-all duration-500"
+                    className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div
-                    className="absolute inset-0 opacity-[0.28] group-hover:opacity-[0.44] transition-opacity duration-500"
-                    style={{
-                      backgroundImage: "url('/robolution.png')",
-                      backgroundSize: '52%',
-                      backgroundPosition: 'center right 6%',
-                      backgroundRepeat: 'no-repeat',
-                      maskImage: 'radial-gradient(ellipse 75% 80% at 75% 50%, black 10%, transparent 70%)',
-                      WebkitMaskImage: 'radial-gradient(ellipse 75% 80% at 75% 50%, black 10%, transparent 70%)',
-                    }}
-                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-black/10" />
+                  <div className="absolute inset-0 bg-blue-950/30" />
                   <div
                     className="absolute bottom-0 right-0 w-44 h-44 rounded-full blur-3xl opacity-40"
                     style={{ background: 'radial-gradient(circle, #f97316 0%, transparent 70%)' }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                  <span className="absolute top-4 left-4 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-orange-500 text-white">
+                  <span className="absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest font-bold bg-orange-500 text-white">
                     {t.robolutionBadge}
                   </span>
-                  <div className="absolute top-4 right-4 w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
+                  <div className="absolute top-4 right-4 z-10 w-9 h-9 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 flex items-center justify-center">
                     <Trophy className="w-4 h-4 text-white" />
                   </div>
-                  <div className="absolute bottom-4 left-4">
-                    <p className={`text-white font-bold text-2xl leading-none ${barlowCondensed.className}`}>ROBOlution</p>
-                    <p className="text-orange-200 text-xs mt-1 font-mono">{t.robolutionSubtitle}</p>
+                  <div className="absolute bottom-4 left-4 z-10">
+                    <p className={`text-white font-bold text-2xl leading-none ${barlowCondensed.className}`}>ROBOcrabs</p>
+                    <p className="text-blue-200 text-xs mt-1 font-mono">{t.robolutionSubtitle}</p>
                   </div>
                 </div>
 
                 <div className="p-6 flex flex-col gap-4">
-                  <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm text-gray-600 dark:text-blue-100/80 leading-relaxed">
                     {t.robolutionDesc}
                   </p>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-blue-100/70">
+                      <MapPin className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" />
+                      <span>Dubai, United Arab Emirates — 2026 International Finals</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-blue-100/70">
+                      <Calendar className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" />
+                      <span>{t.robolutionPoint1}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-blue-100/70">
+                      <Trophy className="w-3.5 h-3.5 text-orange-500 dark:text-orange-400 shrink-0" />
+                      <span>{t.robolutionPoint2}</span>
+                    </div>
+                  </div>
                   <ul className="space-y-2">
-                    {[t.robolutionPoint1, t.robolutionPoint2, t.robolutionPoint3, t.robolutionPoint4].map((point, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-slate-400">
+                    {[t.robolutionPoint3, t.robolutionPoint4].map((point, i) => (
+                      <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-blue-100/70">
                         <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0" />
                         {point}
                       </li>
                     ))}
                   </ul>
-                  <div className="pt-3 border-t border-gray-100 dark:border-slate-700">
-                    {/* ── Visit ROBOlution CTA ── */}
+                  <div className="pt-3 border-t border-gray-100 dark:border-blue-900/30">
                     <a
                       href="https://robolution.erovoutika.ph/home"
                       target="_blank"
@@ -377,7 +387,7 @@ export function Services() {
                       className={`group/btn self-start inline-flex items-center gap-2 px-5 py-2.5 rounded-lg text-white text-xs font-bold transition-all duration-200 hover:scale-[1.02] hover:shadow-lg ${syne.className}`}
                       style={{ background: 'linear-gradient(135deg, #ea580c, #dc2626)' }}
                     >
-                      {t.robolutionCta}
+                      Visit ROBOcrabs
                       <ExternalLink className="w-3 h-3 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform duration-200" />
                     </a>
                   </div>
@@ -387,7 +397,7 @@ export function Services() {
 
             {/* ── EIRA ── */}
             <motion.div variants={item}>
-              <div className="group h-full rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500">
+              <div className="group h-full rounded-2xl border border-gray-200 dark:border-blue-900/30 bg-white dark:bg-[#0a1628] overflow-hidden hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 hover:border-blue-400 dark:hover:border-blue-500/50">
                 <div
                   className="relative h-56 overflow-hidden"
                   style={{ background: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 55%, #ea580c 100%)' }}
@@ -431,19 +441,18 @@ export function Services() {
                 </div>
 
                 <div className="p-6 flex flex-col gap-4">
-                  <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-sm text-gray-600 dark:text-blue-100/80 leading-relaxed">
                     {t.eiraDesc}
                   </p>
                   <ul className="space-y-2">
                     {[t.eiraPoint1, t.eiraPoint2, t.eiraPoint3, t.eiraPoint4].map((point, i) => (
-                      <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-slate-400">
+                      <li key={i} className="flex items-start gap-2.5 text-xs text-gray-600 dark:text-blue-100/70">
                         <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
                         {point}
                       </li>
                     ))}
                   </ul>
-                  <div className="pt-3 border-t border-gray-100 dark:border-slate-700">
-                    {/* ── Visit EIRA CTA ── */}
+                  <div className="pt-3 border-t border-gray-100 dark:border-blue-900/30">
                     <a
                       href="https://eira-erovoutika.vercel.app/"
                       target="_blank"
@@ -465,7 +474,7 @@ export function Services() {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
+            viewport={VP}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mt-16 relative rounded-2xl overflow-hidden"
             style={{ background: 'linear-gradient(135deg, #1d4ed8 0%, #1e40af 50%, #312e81 100%)' }}
@@ -489,7 +498,6 @@ export function Services() {
                   {t.ctaSubtitle}
                 </p>
               </div>
-              {/* ── Start Conversation CTA ── */}
               <button
                 onClick={scrollToContact}
                 className={`group flex-shrink-0 inline-flex items-center gap-2 px-7 py-3.5 bg-white hover:bg-orange-500 text-blue-700 hover:text-white rounded-xl font-bold text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:scale-[1.02] ${syne.className}`}

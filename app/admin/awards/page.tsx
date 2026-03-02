@@ -6,30 +6,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Plus, Pencil, Trash2, Award as AwardIcon, Calendar, Search, Filter } from 'lucide-react'
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '@/components/ui/select'
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { AwardDialog } from './award-dialog'
 
 type Award = {
@@ -44,297 +29,177 @@ type Award = {
 }
 
 export default function AwardsManagement() {
-  const [awards, setAwards] = useState<Award[]>([])
-  const [filteredAwards, setFilteredAwards] = useState<Award[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [editingAward, setEditingAward] = useState<Award | null>(null)
+  const [awards,          setAwards]          = useState<Award[]>([])
+  const [filteredAwards,  setFilteredAwards]  = useState<Award[]>([])
+  const [isLoading,       setIsLoading]       = useState(true)
+  const [deleteId,        setDeleteId]        = useState<string | null>(null)
+  const [dialogOpen,      setDialogOpen]      = useState(false)
+  const [editingAward,    setEditingAward]    = useState<Award | null>(null)
+  const [searchQuery,     setSearchQuery]     = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('all')
+  const [selectedYear,    setSelectedYear]    = useState('all')
+  const [categories,      setCategories]      = useState<string[]>([])
+  const [years,           setYears]           = useState<string[]>([])
 
-  // Search and filter states
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [selectedYear, setSelectedYear] = useState<string>('all')
-  const [categories, setCategories] = useState<string[]>([])
-  const [years, setYears] = useState<string[]>([])
-
-  useEffect(() => {
-    fetchAwards()
-  }, [])
-
-  useEffect(() => {
-    filterAwards()
-  }, [awards, searchQuery, selectedCategory, selectedYear])
+  useEffect(() => { fetchAwards() }, [])
+  useEffect(() => { filterAwards() }, [awards, searchQuery, selectedCategory, selectedYear])
 
   const fetchAwards = async () => {
     try {
-      const { data, error } = await supabase
-        .from('awards')
-        .select('*')
-        .order('year', { ascending: false })
-
+      const { data, error } = await supabase.from('awards').select('*').order('year', { ascending: false })
       if (error) throw error
-
-      const awardsData = data || []
-      setAwards(awardsData)
-
-      // Extract unique categories and years
-      const uniqueCategories = Array.from(new Set(awardsData.map(item => item.category)))
-      const uniqueYears = Array.from(new Set(awardsData.map(item => item.year))).sort((a, b) => b.localeCompare(a))
-      setCategories(uniqueCategories)
-      setYears(uniqueYears)
-    } catch (error) {
-      console.error('Error fetching awards:', error)
-    } finally {
-      setIsLoading(false)
-    }
+      const d = data || []
+      setAwards(d)
+      setCategories([...new Set(d.map(i => i.category))])
+      setYears([...new Set(d.map(i => i.year))].sort((a, b) => b.localeCompare(a)))
+    } catch (e) { console.error(e) }
+    finally { setIsLoading(false) }
   }
 
   const filterAwards = () => {
-    let filtered = [...awards]
-
-    // Apply search filter
-    if (searchQuery) {
-      filtered = filtered.filter(item =>
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.recipient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-
-    // Apply category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(item => item.category === selectedCategory)
-    }
-
-    // Apply year filter
-    if (selectedYear !== 'all') {
-      filtered = filtered.filter(item => item.year === selectedYear)
-    }
-
-    setFilteredAwards(filtered)
+    let f = [...awards]
+    if (searchQuery)              f = f.filter(i => i.title.toLowerCase().includes(searchQuery.toLowerCase()) || i.recipient.toLowerCase().includes(searchQuery.toLowerCase()))
+    if (selectedCategory !== 'all') f = f.filter(i => i.category === selectedCategory)
+    if (selectedYear     !== 'all') f = f.filter(i => i.year     === selectedYear)
+    setFilteredAwards(f)
   }
 
   const handleDelete = async () => {
     if (!deleteId) return
-
     try {
-      const { error } = await supabase
-        .from('awards')
-        .delete()
-        .eq('id', deleteId)
-
+      const { error } = await supabase.from('awards').delete().eq('id', deleteId)
       if (error) throw error
-
-      setAwards(awards.filter(item => item.id !== deleteId))
+      setAwards(awards.filter(i => i.id !== deleteId))
       setDeleteId(null)
-    } catch (error) {
-      console.error('Error deleting award:', error)
-      alert('Failed to delete award')
-    }
+    } catch (e) { console.error(e) }
   }
 
-  const handleAdd = () => {
-    setEditingAward(null)
-    setDialogOpen(true)
-  }
-
-  const handleEdit = (item: Award) => {
-    setEditingAward(item)
-    setDialogOpen(true)
-  }
-
-  const handleDialogClose = () => {
-    setDialogOpen(false)
-    setEditingAward(null)
-  }
-
-  const handleSuccess = () => {
-    fetchAwards()
-  }
-
-  const clearFilters = () => {
-    setSearchQuery('')
-    setSelectedCategory('all')
-    setSelectedYear('all')
-  }
+  const clearFilters = () => { setSearchQuery(''); setSelectedCategory('all'); setSelectedYear('all') }
+  const hasFilters   = searchQuery || selectedCategory !== 'all' || selectedYear !== 'all'
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-12 h-12 border-4 border-orange-600 border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-slate-700 border-t-orange-500 animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-6xl">
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Awards</h2>
-          <p className="text-gray-600 mt-1">Manage your awards and achievements</p>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100">Awards</h1>
+          <p className="text-sm text-gray-500 dark:text-slate-500 mt-0.5">{awards.length} total entries</p>
         </div>
-        <Button onClick={handleAdd} className="bg-orange-600 hover:bg-orange-700">
-          <Plus className="w-4 h-4 mr-2" />
-          Add Award
+        <Button
+          onClick={() => { setEditingAward(null); setDialogOpen(true) }}
+          className="bg-orange-500 hover:bg-orange-600 text-white h-9 px-4 text-sm gap-1.5"
+        >
+          <Plus className="w-4 h-4" /> Add Award
         </Button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-purple-50 rounded-lg flex items-center justify-center">
-              <AwardIcon className="w-6 h-6 text-purple-600" />
+      {/* Summary cards */}
+      <div className="grid grid-cols-3 gap-4">
+        {[
+          { label: 'Total',      value: awards.length,      icon: AwardIcon, color: 'text-violet-500', bg: 'bg-violet-50 dark:bg-violet-500/10' },
+          { label: 'This year',  value: awards.filter(i => i.year === new Date().getFullYear().toString()).length, icon: Calendar, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10' },
+          { label: 'Categories', value: categories.length,  icon: Filter,    color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+        ].map(s => (
+          <div key={s.label} className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] p-5">
+            <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center mb-3`}>
+              <s.icon className={`w-4 h-4 ${s.color}`} />
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Awards</p>
-              <p className="text-2xl font-bold">{awards.length}</p>
-            </div>
+            <p className="text-2xl font-bold text-gray-900 dark:text-slate-100 tabular-nums">{s.value}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{s.label}</p>
           </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center">
-              <Calendar className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">This Year</p>
-              <p className="text-2xl font-bold">
-                {awards.filter(item => item.year === new Date().getFullYear().toString()).length}
-              </p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-gray-200 hover:border-orange-300 transition-colors">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-orange-50 rounded-lg flex items-center justify-center">
-              <AwardIcon className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Categories</p>
-              <p className="text-2xl font-bold">
-                {categories.length}
-              </p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* Search and Filter */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <div className="flex flex-col md:flex-row gap-4">
-          {/* Search Bar */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      {/* Filters */}
+      <div className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] p-4">
+        <div className="flex flex-col md:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search awards by title, recipient, or description..."
+              placeholder="Search awards..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11"
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-9 h-9 text-sm bg-gray-50 dark:bg-white/[0.04] border-gray-200 dark:border-white/[0.08]"
             />
           </div>
-
-          {/* Category Filter */}
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-48 h-11">
-              <Filter className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-full md:w-44 h-9 text-sm bg-gray-50 dark:bg-white/[0.04] border-gray-200 dark:border-white/[0.08]">
               <SelectValue placeholder="Category" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">All categories</SelectItem>
+              {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
-
-          {/* Year Filter */}
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-full md:w-32 h-11">
-              <Calendar className="w-4 h-4 mr-2" />
+            <SelectTrigger className="w-full md:w-32 h-9 text-sm bg-gray-50 dark:bg-white/[0.04] border-gray-200 dark:border-white/[0.08]">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Years</SelectItem>
-              {years.map((year) => (
-                <SelectItem key={year} value={year}>
-                  {year}
-                </SelectItem>
-              ))}
+              <SelectItem value="all">All years</SelectItem>
+              {years.map(y => <SelectItem key={y} value={y}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
-
-          {/* Clear Filters Button */}
-          {(searchQuery || selectedCategory !== 'all' || selectedYear !== 'all') && (
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              className="h-11 hover:bg-orange-50 hover:text-orange-600 hover:border-orange-300"
-            >
-              Clear Filters
+          {hasFilters && (
+            <Button variant="outline" onClick={clearFilters} className="h-9 text-sm border-gray-200 dark:border-white/[0.08] text-gray-500 hover:text-red-500">
+              Clear
             </Button>
           )}
         </div>
-
-        {/* Results Count */}
-        <div className="mt-4 text-sm text-gray-600">
-          Showing {filteredAwards.length} of {awards.length} awards
-        </div>
+        <p className="text-xs text-gray-400 dark:text-slate-600 mt-3">
+          Showing {filteredAwards.length} of {awards.length}
+        </p>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] overflow-hidden">
         {filteredAwards.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500">
-              {searchQuery || selectedCategory !== 'all' || selectedYear !== 'all'
-                ? 'No awards match your search criteria.'
-                : 'No awards yet. Create your first one!'}
+          <div className="text-center py-16">
+            <AwardIcon className="w-8 h-8 text-gray-200 dark:text-slate-700 mx-auto mb-3" />
+            <p className="text-sm text-gray-400 dark:text-slate-600">
+              {hasFilters ? 'No awards match your filters' : 'No awards yet'}
             </p>
           </div>
         ) : (
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Recipient</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Year</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+              <TableRow className="border-b border-gray-100 dark:border-white/[0.06] hover:bg-transparent">
+                <TableHead className="text-xs font-medium text-gray-500 dark:text-slate-500 h-10">Title</TableHead>
+                <TableHead className="text-xs font-medium text-gray-500 dark:text-slate-500 h-10">Recipient</TableHead>
+                <TableHead className="text-xs font-medium text-gray-500 dark:text-slate-500 h-10">Category</TableHead>
+                <TableHead className="text-xs font-medium text-gray-500 dark:text-slate-500 h-10">Year</TableHead>
+                <TableHead className="text-xs font-medium text-gray-500 dark:text-slate-500 h-10 text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAwards.map((item) => (
-                <TableRow key={item.id} className="hover:bg-orange-50 transition-colors">
-                  <TableCell className="font-medium">{item.title}</TableCell>
-                  <TableCell>{item.recipient}</TableCell>
+              {filteredAwards.map(item => (
+                <TableRow key={item.id} className="border-b border-gray-50 dark:border-white/[0.03] hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors">
+                  <TableCell className="text-sm font-medium text-gray-800 dark:text-slate-200">{item.title}</TableCell>
+                  <TableCell className="text-sm text-gray-600 dark:text-slate-400">{item.recipient}</TableCell>
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 font-medium">
                       {item.category}
                     </span>
                   </TableCell>
-                  <TableCell>{item.year}</TableCell>
+                  <TableCell className="text-sm text-gray-600 dark:text-slate-400">{item.year}</TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleEdit(item)}
-                        className="hover:bg-orange-50 hover:text-orange-600"
-                      >
-                        <Pencil className="w-4 h-4" />
+                    <div className="flex items-center justify-end gap-1.5">
+                      <Button variant="ghost" size="sm" onClick={() => { setEditingAward(item); setDialogOpen(true) }}
+                        className="h-7 w-7 p-0 hover:bg-gray-100 dark:hover:bg-white/[0.06] text-gray-400 hover:text-gray-700 dark:hover:text-slate-300">
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setDeleteId(item.id)}
-                        className="hover:bg-red-50 hover:text-red-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
+                      <Button variant="ghost" size="sm" onClick={() => setDeleteId(item.id)}
+                        className="h-7 w-7 p-0 hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-400 hover:text-red-500">
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </TableCell>
@@ -345,31 +210,24 @@ export default function AwardsManagement() {
         )}
       </div>
 
-      {/* Award Dialog */}
       <AwardDialog
         open={dialogOpen}
-        onOpenChange={handleDialogClose}
+        onOpenChange={open => { if (!open) { setDialogOpen(false); setEditingAward(null) } }}
         award={editingAward}
-        onSuccess={handleSuccess}
+        onSuccess={fetchAwards}
       />
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="bg-white dark:bg-[#0e1525] border border-gray-100 dark:border-white/[0.08]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the award.
+            <AlertDialogTitle className="text-gray-900 dark:text-slate-100">Delete award?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-500 dark:text-slate-400 text-sm">
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              Delete
-            </AlertDialogAction>
+            <AlertDialogCancel className="border-gray-200 dark:border-white/[0.08]">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-0">Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

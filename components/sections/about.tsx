@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useLanguage } from '@/lib/i18n/languageContext'
 import { Barlow_Condensed, Syne } from 'next/font/google'
@@ -11,15 +11,33 @@ import Image from 'next/image'
 const barlowCondensed = Barlow_Condensed({ subsets: ['latin'], weight: ['600', '700'], display: 'swap' })
 const syne = Syne({ subsets: ['latin'], weight: ['500', '600', '700'], display: 'swap' })
 
-// ─── Photos ───────────────────────────────────────────────────────────────────
 const PHOTOS = [
   { src: '/images/about-1.jpg', alt: 'Robotics workshop' },
   { src: '/images/about-2.jpg', alt: 'Engineering team' },
   { src: '/images/about-3.jpg', alt: 'Automation project' },
 ]
 
-// ─── Spotlight row component ──────────────────────────────────────────────────
-function SpotlightRow({ row, index }: { row: { num: string; icon: React.ElementType; label: string; desc: string; color: string; border: string; bg: string }; index: number }) {
+// ─── Subtle scroll-parallax wrapper for each photo ────────────────────────────
+function ParallaxPhoto({ src, alt, sizes, priority = false }: {
+  src: string; alt: string; sizes: string; priority?: boolean
+}) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], ['5%', '-5%'])
+  return (
+    <div ref={ref} className="absolute inset-0 overflow-hidden">
+      <motion.div style={{ y }} className="absolute inset-[-6%] w-[112%] h-[112%]">
+        <Image src={src} alt={alt} fill sizes={sizes} className="object-cover" priority={priority} />
+      </motion.div>
+    </div>
+  )
+}
+
+// ─── SpotlightRow ─────────────────────────────────────────────────────────────
+function SpotlightRow({ row, index }: {
+  row: { num: string; icon: React.ElementType; label: string; desc: string; color: string; border: string; bg: string }
+  index: number
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const isInView = useInView(ref, { margin: '-30% 0px -30% 0px' })
   const Icon = row.icon
@@ -28,18 +46,25 @@ function SpotlightRow({ row, index }: { row: { num: string; icon: React.ElementT
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.04 }}
+      // Alternate slide-in direction per row
+      initial={{ opacity: 0, x: isEven ? -24 : 24 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: false, margin: '-60px' }}
+      transition={{ duration: 0.55, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
       className={`
         group relative flex items-center gap-0
         border-b border-gray-200 dark:border-slate-800
-        transition-all duration-500 ease-out
+        transition-colors duration-500 ease-out
         ${isInView ? 'bg-white dark:bg-slate-900/60' : 'bg-transparent'}
       `}
     >
-      <div className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full transition-all duration-500 ${isInView ? `${row.bg} opacity-100` : 'opacity-0 bg-transparent'}`} />
+      {/* Side accent bar — grows from bottom when row is active */}
+      <motion.div
+        animate={{ scaleY: isInView ? 1 : 0, opacity: isInView ? 1 : 0 }}
+        transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+        style={{ transformOrigin: 'bottom' }}
+        className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-r-full ${row.bg}`}
+      />
 
       <div className={`w-full flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-0 py-7 px-8 md:px-10 ${isEven ? '' : 'md:flex-row-reverse'}`}>
         <div className={`flex-1 flex items-center gap-5 ${isEven ? '' : 'md:justify-end md:text-right'}`}>
@@ -54,9 +79,14 @@ function SpotlightRow({ row, index }: { row: { num: string; icon: React.ElementT
         <div className={`hidden md:block mx-10 lg:mx-16 self-stretch w-px transition-all duration-500 ${isInView ? 'bg-gray-200 dark:bg-slate-700' : 'bg-transparent'}`} />
 
         <div className={`flex-1 flex items-center gap-4 ${isEven ? '' : 'md:justify-end'}`}>
-          <div className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 ${isInView ? `${row.bg} shadow-md` : 'bg-gray-100 dark:bg-slate-800'}`}>
+          {/* Icon snaps into place when row becomes active */}
+          <motion.div
+            animate={isInView ? { scale: 1, rotate: 0 } : { scale: 0.6, rotate: -15 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 18 }}
+            className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-500 ${isInView ? `${row.bg} shadow-md` : 'bg-gray-100 dark:bg-slate-800'}`}
+          >
             <Icon className={`w-4 h-4 transition-colors duration-500 ${isInView ? 'text-white' : 'text-gray-400 dark:text-slate-600'}`} />
-          </div>
+          </motion.div>
           <p className={`text-sm leading-relaxed max-w-xs transition-colors duration-500 ${isInView ? 'text-gray-600 dark:text-slate-400' : 'text-gray-300 dark:text-slate-700'}`}>
             {row.desc}
           </p>
@@ -117,122 +147,224 @@ export function About() {
           <div className="grid lg:grid-cols-2 gap-16 items-center">
 
             {/* LEFT — photo grid desktop */}
-            <motion.div
-              initial={{ opacity: 0, x: -28 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              className="hidden lg:block"
-            >
+            <div className="hidden lg:block">
               <div className="grid grid-cols-5 gap-3 h-[460px]">
+
+                {/* Main photo — parallax + hover lift */}
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.7, delay: 0.05 }}
-                  className="col-span-3 relative overflow-hidden rounded-2xl group"
+                  initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: false, margin: '-60px' }}
+                  transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+                  whileHover={{ scale: 1.02 }}
+                  className="col-span-3 relative overflow-hidden rounded-2xl group cursor-default"
                 >
-                  <Image src={PHOTOS[0].src} alt={PHOTOS[0].alt} fill sizes="(max-width:1280px) 40vw, 380px" className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3 bg-gradient-to-t from-black/60 to-transparent">
+                  <ParallaxPhoto src={PHOTOS[0].src} alt={PHOTOS[0].alt} sizes="(max-width:1280px) 40vw, 380px" priority />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                  <div className="absolute bottom-0 left-0 right-0 px-4 py-3">
                     <p className="text-white text-xs font-mono tracking-widest uppercase opacity-80">{PHOTOS[0].alt}</p>
                   </div>
                 </motion.div>
+
+                {/* Two stacked photos — slide in from right, staggered */}
                 <div className="col-span-2 flex flex-col gap-3">
                   {[PHOTOS[1], PHOTOS[2]].map((photo, i) => (
-                    <motion.div key={i} initial={{ opacity: 0, scale: 0.97 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.12 + i * 0.1 }} className="relative flex-1 overflow-hidden rounded-2xl group">
-                      <Image src={photo.src} alt={photo.alt} fill sizes="(max-width:1280px) 25vw, 220px" className="object-cover transition-transform duration-700 group-hover:scale-105" />
-                      <div className="absolute bottom-0 left-0 right-0 px-3 py-2 bg-gradient-to-t from-black/50 to-transparent">
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 24, scale: 0.97 }}
+                      whileInView={{ opacity: 1, x: 0, scale: 1 }}
+                      viewport={{ once: false, amount: 0.2 }}
+                      transition={{ duration: 0.7, delay: 0.1 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                      whileHover={{ scale: 1.03 }}
+                      className="relative flex-1 overflow-hidden rounded-2xl group cursor-default"
+                    >
+                      <ParallaxPhoto src={photo.src} alt={photo.alt} sizes="(max-width:1280px) 25vw, 220px" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute bottom-0 left-0 right-0 px-3 py-2">
                         <p className="text-white text-[9px] font-mono tracking-widest uppercase opacity-75">{photo.alt}</p>
                       </div>
                     </motion.div>
                   ))}
                 </div>
               </div>
-              <motion.div initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }} viewport={{ once: true }} transition={{ duration: 0.9, delay: 0.4, ease: [0.22, 1, 0.36, 1] }} className="mt-3 h-[2px] bg-gradient-to-r from-blue-500 via-orange-400 to-transparent origin-left rounded-full" />
-            </motion.div>
 
-            {/* Mobile photo grid */}
+              {/* Gradient rule — draws left to right */}
+              <motion.div
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 1.0, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="mt-3 h-[2px] bg-gradient-to-r from-blue-500 via-orange-400 to-transparent origin-left rounded-full"
+              />
+            </div>
+
+            {/* Mobile photo grid — unchanged */}
             <div className="lg:hidden grid grid-cols-2 gap-3 h-56">
               <div className="relative row-span-2 rounded-2xl overflow-hidden"><Image src={PHOTOS[0].src} alt={PHOTOS[0].alt} fill sizes="50vw" className="object-cover" /></div>
               <div className="relative rounded-2xl overflow-hidden"><Image src={PHOTOS[1].src} alt={PHOTOS[1].alt} fill sizes="50vw" className="object-cover" /></div>
               <div className="relative rounded-2xl overflow-hidden"><Image src={PHOTOS[2].src} alt={PHOTOS[2].alt} fill sizes="50vw" className="object-cover" /></div>
             </div>
 
-            {/* RIGHT — heading + description */}
-            <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: 0.15 }} className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 rounded-full text-sm font-medium">
+            {/* RIGHT — text, staggered reveal */}
+            <div className="space-y-6">
+
+              {/* Badge — clip-path wipe left→right */}
+              <motion.div
+                initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
+                whileInView={{ clipPath: 'inset(0 0% 0 0)', opacity: 1 }}
+                viewport={{ once: false, margin: '-40px' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-orange-100 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 rounded-full text-sm font-medium"
+              >
                 <Target className="w-4 h-4" />
                 {t.about.badge}
+              </motion.div>
+
+              {/* Heading — mask reveal (overflow hidden + y slide) */}
+              <div className="overflow-hidden">
+                <motion.h2
+                  initial={{ y: 56, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: false, margin: '-40px' }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                  className={`text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight ${barlowCondensed.className}`}
+                >
+                  {t.about.fullTitle}
+                </motion.h2>
               </div>
-              <h2 className={`text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white leading-tight ${barlowCondensed.className}`}>
-                {t.about.fullTitle}
-              </h2>
-              <p className="text-base text-gray-600 dark:text-slate-400 leading-relaxed">{t.about.description}</p>
-              {/* ── Get In Touch CTA ── */}
-              <Link
-                href="#contact"
-                className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 group ${syne.className}`}
+
+              {/* Body text */}
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+                className="text-base text-gray-600 dark:text-slate-400 leading-relaxed"
               >
-                {t.about.getInTouch}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
-              </Link>
-            </motion.div>
+                {t.about.description}
+              </motion.p>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, x: -14 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.45, delay: 0.22 }}
+              >
+                <Link
+                  href="#contact"
+                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300 group ${syne.className}`}
+                >
+                  {t.about.getInTouch}
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-200" />
+                </Link>
+              </motion.div>
+            </div>
           </div>
 
-          {/* ── Divider ── */}
+          {/* ── Divider — two lines draw toward center ── */}
           <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700/60" />
-            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500">{t.about.foundationLabel}</span>
-            <div className="flex-1 h-px bg-gray-200 dark:bg-slate-700/60" />
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 h-px bg-gray-200 dark:bg-slate-700/60 origin-right"
+            />
+            <motion.span
+              initial={{ opacity: 0, scale: 0.75 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.38, delay: 0.28 }}
+              className="text-[10px] font-mono uppercase tracking-[0.2em] text-gray-400 dark:text-slate-500 whitespace-nowrap"
+            >
+              {t.about.foundationLabel}
+            </motion.span>
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+              className="flex-1 h-px bg-gray-200 dark:bg-slate-700/60 origin-left"
+            />
           </div>
 
           {/* ── BLOCK 2: Excellence intro ── */}
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="text-center max-w-2xl mx-auto space-y-4">
-            <h3 className={`text-3xl md:text-4xl font-bold text-gray-900 dark:text-white ${barlowCondensed.className}`}>{t.about.excellenceTitle}</h3>
-            <p className="text-base text-gray-600 dark:text-slate-400 leading-relaxed">{t.about.excellenceDesc}</p>
-            <div className="flex flex-wrap gap-3 pt-2 justify-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.6 }}
+            className="text-center max-w-2xl mx-auto space-y-4"
+          >
+            <h3 className={`text-3xl md:text-4xl font-bold text-gray-900 dark:text-white ${barlowCondensed.className}`}>
+              {t.about.excellenceTitle}
+            </h3>
+            <p className="text-base text-gray-600 dark:text-slate-400 leading-relaxed">
+              {t.about.excellenceDesc}
+            </p>
+
+            {/* Tags — staggered spring pop */}
+            <motion.div
+              variants={{
+                hidden: {},
+                show: { transition: { staggerChildren: 0.055, delayChildren: 0.1 } },
+              }}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: false, amount: 0.2 }}
+              className="flex flex-wrap gap-3 pt-2 justify-center"
+            >
               {t.about.tags.split(',').map((tag) => (
-                <span key={tag} className="px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700">{tag}</span>
+                <motion.span
+                  key={tag}
+                  variants={{
+                    hidden: { opacity: 0, scale: 0.75, y: 8 },
+                    show:   { opacity: 1, scale: 1,    y: 0 },
+                  }}
+                  transition={{ type: 'spring', stiffness: 280, damping: 20 }}
+                  className="px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wider bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border border-gray-200 dark:border-slate-700"
+                >
+                  {tag}
+                </motion.span>
               ))}
-            </div>
+            </motion.div>
           </motion.div>
 
           {/* ── BLOCK 3: Mission / Vision / Values ── */}
           <div className="space-y-0">
 
-            {/* Icon row with horizontal connector line */}
+            {/* Connector line + icons */}
             <div className="relative flex items-center justify-center">
               <motion.div
                 initial={{ scaleX: 0, opacity: 0 }}
                 whileInView={{ scaleX: 1, opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ duration: 0.75, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   transformOrigin: 'center',
                   position: 'absolute',
-                  left: '-2rem',
-                  right: '-2rem',
-                  top: '50%',
-                  height: 2,
+                  left: '-2rem', right: '-2rem',
+                  top: '50%', height: 2,
                   transform: 'translateY(-50%)',
                   borderRadius: 9999,
                   background: 'linear-gradient(to right, transparent, #3b82f6 15%, #3b82f6 30%, #f97316 50%, #10b981 70%, #10b981 85%, transparent)',
                 }}
               />
-
               <div className="relative z-10 grid grid-cols-3 w-full">
                 {TIMELINE.map((item, i) => (
                   <div key={item.num} className="flex justify-center">
+                    {/* Icon — spring scale in with stagger */}
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.7 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.55, delay: i * 0.18 }}
+                      initial={{ opacity: 0, scale: 0.35, y: 8 }}
+                      whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.2 }}
+                      transition={{ type: 'spring', stiffness: 220, damping: 16, delay: i * 0.16 }}
                     >
                       <motion.div
-                        whileHover={{ scale: 1.15 }}
-                        transition={{ type: 'spring', stiffness: 300 }}
-                        className={`w-14 h-14 rounded-full ${item.iconSolid} flex items-center justify-center shadow-xl`}
+                        whileHover={{ scale: 1.15, rotate: 5 }}
+                        transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+                        className={`w-14 h-14 rounded-full ${item.iconSolid} flex items-center justify-center shadow-xl cursor-default`}
                       >
                         <item.icon className="w-7 h-7 text-white" />
                       </motion.div>
@@ -246,20 +378,23 @@ export function About() {
             <div className="grid grid-cols-3 gap-6 mt-0">
               {TIMELINE.map((item, i) => (
                 <div key={item.num} className="flex flex-col items-center">
+                  {/* Vertical line — grows from top */}
                   <motion.div
                     initial={{ scaleY: 0 }}
                     whileInView={{ scaleY: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.4, delay: 0.3 + i * 0.12 }}
+                    viewport={{ once: false, amount: 0.2 }}
+                    transition={{ duration: 0.38, delay: 0.28 + i * 0.12 }}
                     style={{ transformOrigin: 'top', width: 2, height: 32 }}
                     className={`bg-gradient-to-b ${item.gradientBar} shrink-0`}
                   />
+                  {/* Card — y + scale, hover lift */}
                   <motion.div
-                    initial={{ opacity: 0, y: 24 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.35 + i * 0.15 }}
-                    className="w-full text-center bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-gray-100 dark:border-slate-700/50 hover:border-gray-300 dark:hover:border-slate-500 hover:shadow-lg transition-all duration-300 flex flex-col flex-1"
+                    initial={{ opacity: 0, y: 24, scale: 0.97 }}
+                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                    viewport={{ once: false, amount: 0.2 }}
+                    transition={{ duration: 0.52, delay: 0.34 + i * 0.13, ease: [0.22, 1, 0.36, 1] }}
+                    whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                    className="w-full text-center bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-6 border border-gray-100 dark:border-slate-700/50 hover:border-gray-300 dark:hover:border-slate-500 hover:shadow-lg transition-colors duration-300 flex flex-col flex-1 cursor-default"
                   >
                     <div className={`h-1 rounded-full bg-gradient-to-r ${item.gradientBar} w-full mb-4`} />
                     <h4 className={`${barlowCondensed.className} text-xl font-bold mb-2 ${item.accent}`}>{item.title}</h4>
@@ -270,7 +405,6 @@ export function About() {
             </div>
 
           </div>
-
         </div>
       </section>
 
@@ -280,18 +414,53 @@ export function About() {
       <section id="who-we-serve" className="py-24 bg-gray-50 dark:bg-[#070D1A] overflow-hidden">
         <div className="container mx-auto px-6 max-w-7xl">
 
-          <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="mb-4 space-y-3">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium">
+          {/* Heading block */}
+          <div className="mb-4 space-y-3">
+            {/* Badge — clip-path wipe */}
+            <motion.div
+              initial={{ clipPath: 'inset(0 100% 0 0)', opacity: 0 }}
+              whileInView={{ clipPath: 'inset(0 0% 0 0)', opacity: 1 }}
+              viewport={{ once: false, amount: 0.2 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 rounded-full text-sm font-medium"
+            >
               <GraduationCap className="w-4 h-4" />
               {t.about.whoWeServeBadge}
-            </div>
-            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-              <h2 className={`text-4xl md:text-5xl font-bold text-gray-900 dark:text-white ${barlowCondensed.className}`}>{t.about.whoWeServeTitle}</h2>
-              <p className="text-sm text-gray-500 dark:text-slate-500 max-w-xs leading-relaxed">{t.about.whoWeServeSubtitle}</p>
-            </div>
-          </motion.div>
+            </motion.div>
 
-          <div className="mt-8 border-t border-gray-200 dark:border-slate-800" />
+            <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              {/* Heading — mask reveal */}
+              <div className="overflow-hidden">
+                <motion.h2
+                  initial={{ y: 46, opacity: 0 }}
+                  whileInView={{ y: 0, opacity: 1 }}
+                  viewport={{ once: false, amount: 0.2 }}
+                  transition={{ duration: 0.65, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
+                  className={`text-4xl md:text-5xl font-bold text-gray-900 dark:text-white ${barlowCondensed.className}`}
+                >
+                  {t.about.whoWeServeTitle}
+                </motion.h2>
+              </div>
+              <motion.p
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ delay: 0.26, duration: 0.45 }}
+                className="text-sm text-gray-500 dark:text-slate-500 max-w-xs leading-relaxed"
+              >
+                {t.about.whoWeServeSubtitle}
+              </motion.p>
+            </div>
+          </div>
+
+          {/* Divider — draws left to right */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 border-t border-gray-200 dark:border-slate-800 origin-left"
+          />
 
           <div className="divide-y-0">
             {SERVE_ROWS.map((row, i) => (
@@ -299,14 +468,26 @@ export function About() {
             ))}
           </div>
 
-          <div className="border-t border-gray-200 dark:border-slate-800 mt-0" />
+          {/* Divider — draws right to left */}
+          <motion.div
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="border-t border-gray-200 dark:border-slate-800 mt-0 origin-right"
+          />
 
-          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: 0.2 }} className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          >
             <p className="text-sm text-gray-500 dark:text-slate-500">
               {t.about.notSure}{' '}
               <span className="text-gray-700 dark:text-slate-300 font-medium">{t.about.notSureHighlight}</span>
             </p>
-            {/* ── Talk to Us CTA ── */}
             <Link
               href="#contact"
               className={`shrink-0 inline-flex items-center gap-2 px-7 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold shadow-md hover:shadow-xl transition-all duration-300 group ${syne.className}`}

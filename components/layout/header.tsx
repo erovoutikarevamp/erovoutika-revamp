@@ -47,10 +47,24 @@ export function Header() {
     }
   }
 
-  const regularNav = useMemo(
-    () => SITE_CONFIG.navigation.filter((item) => !item.highlight),
-    []
-  )
+const regularNav = useMemo(
+  () => {
+    const nav = SITE_CONFIG.navigation.filter((item) => !item.highlight);
+    
+    // Logic to swap "News" and "About"
+    const newsIndex = nav.findIndex(item => item.name === 'News' || item.name === 'news');
+    const aboutIndex = nav.findIndex(item => item.name === 'About' || item.name === 'about');
+
+    if (newsIndex !== -1 && aboutIndex !== -1) {
+      const temp = nav[newsIndex];
+      nav[newsIndex] = nav[aboutIndex];
+      nav[aboutIndex] = temp;
+    }
+    
+    return nav;
+  },
+  []
+)
 
   const isHeroVisible = isHomePage && atTop && isDark
 
