@@ -4,11 +4,17 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Mail, Search, Trash2, Eye, EyeOff, Clock, Inbox } from 'lucide-react'
+import { Mail, Search, Trash2, Eye, EyeOff, Clock, User, Terminal, Inbox, ShieldAlert } from 'lucide-react'
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 type Message = {
   id: string
@@ -19,47 +25,82 @@ type Message = {
   created_at: string
 }
 
+// ── Mechanical corner brackets ────────────────────────────────────────────────
+function CardCorners({ color = 'rgba(245,158,11,0.2)' }: { color?: string }) {
+  const base: React.CSSProperties = {
+    position: 'absolute', width: 8, height: 8,
+    pointerEvents: 'none', zIndex: 2,
+    borderColor: color, borderStyle: 'solid',
+  }
+  return (
+    <>
+      <span style={{ ...base, top: 0,    left:  0, borderWidth: '1.5px 0 0 1.5px' }} />
+      <span style={{ ...base, top: 0,    right: 0, borderWidth: '1.5px 1.5px 0 0' }} />
+      <span style={{ ...base, bottom: 0, left:  0, borderWidth: '0 0 1.5px 1.5px' }} />
+      <span style={{ ...base, bottom: 0, right: 0, borderWidth: '0 1.5px 1.5px 0' }} />
+    </>
+  )
+}
+
 export default function MessagesPage() {
-  const [messages,         setMessages]         = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
   const [filteredMessages, setFilteredMessages] = useState<Message[]>([])
-  const [isLoading,        setIsLoading]        = useState(true)
-  const [deleteId,         setDeleteId]         = useState<string | null>(null)
-  const [expandedId,       setExpandedId]       = useState<string | null>(null)
-  const [searchQuery,      setSearchQuery]      = useState('')
-  const [filter,           setFilter]           = useState<'all' | 'unread' | 'read'>('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterRead, setFilterRead] = useState<'all' | 'read' | 'unread'>('all')
 
   useEffect(() => { fetchMessages() }, [])
-  useEffect(() => { filterMessages() }, [messages, searchQuery, filter])
+  useEffect(() => { filterMessages() }, [messages, searchQuery, filterRead])
 
   const fetchMessages = async () => {
     try {
-      const { data, error } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false })
+      const { data, error } = await supabase
+        .from('contact_messages')
+        .select('*')
+        .order('created_at', { ascending: false })
       if (error) throw error
       setMessages(data || [])
-    } catch (e) { console.error(e) }
-    finally { setIsLoading(false) }
+    } catch (error) {
+      console.error('Fetch error:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const filterMessages = () => {
-    let f = [...messages]
-    if (searchQuery) f = f.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()) || m.email.toLowerCase().includes(searchQuery.toLowerCase()) || m.message.toLowerCase().includes(searchQuery.toLowerCase()))
-    if (filter === 'unread') f = f.filter(m => !m.is_read)
-    if (filter === 'read')   f = f.filter(m =>  m.is_read)
-    setFilteredMessages(f)
+    let filtered = [...messages]
+    if (searchQuery) {
+      filtered = filtered.filter(item =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.message.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    }
+    if (filterRead !== 'all') {
+      filtered = filtered.filter(item => filterRead === 'read' ? item.is_read : !item.is_read)
+    }
+    setFilteredMessages(filtered)
   }
 
-  const markRead = async (id: string, current: boolean) => {
+  const handleMarkRead = async (id: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase.from('contact_messages').update({ is_read: !current }).eq('id', id)
+      const { error } = await supabase.from('contact_messages').update({ is_read: !currentStatus }).eq('id', id)
       if (error) throw error
-      setMessages(messages.map(m => m.id === id ? { ...m, is_read: !current } : m))
-    } catch (e) { console.error(e) }
+      setMessages(messages.map(m => m.id === id ? { ...m, is_read: !currentStatus } : m))
+    } catch (error) {
+      console.error('Update error:', error)
+    }
   }
 
-  const handleExpand = async (msg: Message) => {
-    if (expandedId === msg.id) { setExpandedId(null); return }
-    setExpandedId(msg.id)
-    if (!msg.is_read) await markRead(msg.id, false)
+  const handleExpand = async (message: Message) => {
+    if (expandedId === message.id) {
+      setExpandedId(null)
+      return
+    }
+    setExpandedId(message.id)
+    if (!message.is_read) await handleMarkRead(message.id, false)
   }
 
   const handleDelete = async () => {
@@ -69,85 +110,91 @@ export default function MessagesPage() {
       if (error) throw error
       setMessages(messages.filter(m => m.id !== deleteId))
       setDeleteId(null)
-    } catch (e) { console.error(e) }
+    } catch (error) {
+      console.error('Delete error:', error)
+    }
   }
 
-  const timeAgo = (d: string) => {
-    const s = Math.floor((Date.now() - new Date(d).getTime()) / 1000)
-    if (s < 60)     return 'Just now'
-    if (s < 3600)   return `${Math.floor(s / 60)}m ago`
-    if (s < 86400)  return `${Math.floor(s / 3600)}h ago`
-    return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const getTimeAgo = (dateString: string) => {
+    const seconds = Math.floor((new Date().getTime() - new Date(dateString).getTime()) / 1000)
+    if (seconds < 60) return 'JUST_NOW'
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}M_AGO`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}H_AGO`
+    return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }).toUpperCase()
   }
-
-  const unreadCount = messages.filter(m => !m.is_read).length
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 rounded-full border-2 border-gray-200 dark:border-slate-700 border-t-orange-500 animate-spin" />
+        <div className="relative w-12 h-12 flex items-center justify-center">
+          <div className="absolute inset-0 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+          <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-
-      {/* Header */}
-      <div className="flex items-start justify-between">
+    <div className="space-y-6">
+      {/* ── Header ── */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-gray-200 dark:border-white/[0.07] pb-6">
         <div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-slate-100 flex items-center gap-2">
-            Messages
-            {unreadCount > 0 && (
-              <span className="text-xs font-medium px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400">
-                {unreadCount} new
+          <div className="flex items-center gap-2 mb-2 font-mono text-[9px] tracking-[0.3em] uppercase text-amber-500">
+            <Terminal className="w-3 h-3" />
+            <span>Root://Comm_Link/Inbound</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-slate-100 tracking-tight flex items-center gap-3">
+            Inbound Messages
+            {messages.filter(m => !m.is_read).length > 0 && (
+              <span className="text-[10px] font-mono font-normal px-2 py-0.5 rounded bg-amber-500 text-black animate-pulse">
+                {messages.filter(m => !m.is_read).length} NEW_PACKETS
               </span>
             )}
           </h1>
-          <p className="text-sm text-gray-500 dark:text-slate-500 mt-0.5">{messages.length} total messages</p>
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* ── Telemetry Grid ── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono">
         {[
-          { label: 'Total',  value: messages.length,                     color: 'text-blue-500',   bg: 'bg-blue-50 dark:bg-blue-500/10',   icon: Inbox },
-          { label: 'Unread', value: messages.filter(m => !m.is_read).length, color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-500/10', icon: Mail },
-          { label: 'Read',   value: messages.filter(m =>  m.is_read).length, color: 'text-emerald-500', bg: 'bg-emerald-50 dark:bg-emerald-500/10', icon: Eye },
-        ].map(s => (
-          <div key={s.label} className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] p-4 flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center shrink-0`}>
-              <s.icon className={`w-4 h-4 ${s.color}`} />
+          { label: 'TOTAL_TRAFFIC', val: messages.length, icon: Inbox, color: 'text-blue-500' },
+          { label: 'UNREAD_FLAGS', val: messages.filter(m => !m.is_read).length, icon: ShieldAlert, color: 'text-amber-500' },
+          { label: 'ARCHIVED', val: messages.filter(m => m.is_read).length, icon: Eye, color: 'text-emerald-500' },
+        ].map((stat, i) => (
+          <div key={i} className="relative bg-white dark:bg-[#0d1526] border border-gray-200 dark:border-white/[0.07] p-4 group overflow-hidden">
+            <CardCorners color="rgba(255,255,255,0.05)" />
+            <div className="flex items-center justify-between relative z-10">
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-gray-500 mb-1">{stat.label}</p>
+                <p className="text-2xl font-bold dark:text-white">{stat.val}</p>
+              </div>
+              <stat.icon className={`w-8 h-8 ${stat.color} opacity-20 group-hover:opacity-40 transition-opacity`} />
             </div>
-            <div>
-              <p className="text-lg font-bold text-gray-900 dark:text-slate-100 leading-none">{s.value}</p>
-              <p className="text-xs text-gray-500 dark:text-slate-500 mt-0.5">{s.label}</p>
-            </div>
+            <div className="absolute bottom-0 left-0 h-[1px] bg-current opacity-20 w-full transform -translate-x-full group-hover:translate-x-0 transition-transform duration-500" />
           </div>
         ))}
       </div>
 
-      {/* Filters */}
-      <div className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] p-4">
-        <div className="flex flex-col md:flex-row gap-3">
-          <div className="relative flex-1">
+      {/* ── Filter Module ── */}
+      <div className="relative bg-white dark:bg-[#0d1526] border border-gray-200 dark:border-white/[0.07] p-4">
+        <CardCorners />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <Input
-              placeholder="Search messages..."
+              placeholder="Search data packets..."
               value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="pl-9 h-9 text-sm bg-gray-50 dark:bg-white/[0.04] border-gray-200 dark:border-white/[0.08]"
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-10 bg-transparent border-gray-200 dark:border-white/[0.05] font-mono text-xs"
             />
           </div>
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 dark:border-white/[0.08] bg-gray-50 dark:bg-white/[0.04] p-0.5 gap-0.5">
-            {(['all', 'unread', 'read'] as const).map(f => (
+          <div className="flex bg-gray-100 dark:bg-white/[0.03] p-1 rounded-md border border-gray-200 dark:border-white/[0.05]">
+            {(['all', 'unread', 'read'] as const).map((f) => (
               <button
                 key={f}
-                onClick={() => setFilter(f)}
-                className={`px-4 py-1.5 rounded-md text-xs font-medium capitalize transition-colors ${
-                  filter === f
-                    ? 'bg-white dark:bg-slate-800 text-gray-800 dark:text-slate-200 shadow-sm'
-                    : 'text-gray-500 dark:text-slate-500 hover:text-gray-700 dark:hover:text-slate-400'
+                onClick={() => setFilterRead(f)}
+                className={`px-4 py-1.5 rounded text-[10px] font-mono uppercase tracking-tighter transition-all ${
+                  filterRead === f ? 'bg-amber-500 text-black shadow-lg' : 'text-gray-500 hover:text-white'
                 }`}
               >
                 {f}
@@ -157,76 +204,78 @@ export default function MessagesPage() {
         </div>
       </div>
 
-      {/* Message list */}
-      <div className="space-y-2">
+      {/* ── Packet List ── */}
+      <div className="space-y-3">
         {filteredMessages.length === 0 ? (
-          <div className="bg-white dark:bg-[#0d1526] rounded-xl border border-gray-100 dark:border-white/[0.06] py-16 text-center">
-            <Inbox className="w-8 h-8 text-gray-200 dark:text-slate-700 mx-auto mb-3" />
-            <p className="text-sm text-gray-400 dark:text-slate-600">No messages found</p>
+          <div className="py-20 text-center bg-white dark:bg-[#0d1526] border border-dashed border-gray-200 dark:border-white/[0.07] rounded-lg">
+            <Terminal className="w-8 h-8 text-gray-600 mx-auto mb-2 opacity-20" />
+            <p className="font-mono text-[10px] uppercase tracking-widest text-gray-500">Buffer_Empty: No messages detected</p>
           </div>
         ) : (
-          filteredMessages.map(msg => (
+          filteredMessages.map((msg) => (
             <div
               key={msg.id}
-              className={`bg-white dark:bg-[#0d1526] rounded-xl border transition-colors ${
-                !msg.is_read
-                  ? 'border-orange-200 dark:border-orange-500/30'
-                  : 'border-gray-100 dark:border-white/[0.06]'
+              className={`relative group bg-white dark:bg-[#0d1526] border transition-all duration-300 ${
+                !msg.is_read ? 'border-amber-500/40 shadow-[0_0_15px_-5px_rgba(245,158,11,0.2)]' : 'border-gray-200 dark:border-white/[0.05]'
               }`}
             >
-              {/* Row */}
-              <div
-                className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.02] rounded-xl transition-colors"
+              <div 
+                className="flex flex-col md:flex-row md:items-center justify-between p-4 cursor-pointer hover:bg-amber-500/[0.02]"
                 onClick={() => handleExpand(msg)}
               >
-                {/* Unread dot */}
-                <div className="w-2 h-2 rounded-full shrink-0">
-                  {!msg.is_read ? (
-                    <div className="w-2 h-2 rounded-full bg-orange-500" />
-                  ) : (
-                    <div className="w-2 h-2 rounded-full bg-gray-200 dark:bg-slate-700" />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0 grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-3 items-center">
-                  <div className="min-w-0">
-                    <p className={`text-sm truncate ${!msg.is_read ? 'font-semibold text-gray-900 dark:text-slate-100' : 'font-medium text-gray-700 dark:text-slate-300'}`}>
-                      {msg.name}
-                    </p>
-                    <p className="text-xs text-gray-400 dark:text-slate-500 truncate">{msg.email}</p>
+                <div className="flex items-center gap-4">
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                    !msg.is_read ? 'bg-amber-500/10 border-amber-500/30' : 'bg-gray-100 dark:bg-white/[0.02] border-transparent'
+                  }`}>
+                    <User className={`w-4 h-4 ${!msg.is_read ? 'text-amber-500' : 'text-gray-500'}`} />
                   </div>
-                  <p className="text-sm text-gray-500 dark:text-slate-500 truncate">{msg.message}</p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-sm dark:text-white uppercase tracking-tight">{msg.name}</span>
+                      {!msg.is_read && <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />}
+                    </div>
+                    <span className="font-mono text-[10px] text-gray-500">{msg.email}</span>
+                  </div>
                 </div>
 
-                <div className="flex items-center gap-1 text-xs text-gray-400 dark:text-slate-600 shrink-0">
-                  <Clock className="w-3 h-3" />
-                  {timeAgo(msg.created_at)}
+                <div className="flex items-center gap-6 mt-3 md:mt-0">
+                   <p className="text-xs text-gray-500 line-clamp-1 max-w-[200px] italic font-serif">
+                     {msg.message}
+                   </p>
+                   <div className="flex flex-col items-end shrink-0">
+                      <span className="font-mono text-[9px] text-gray-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {getTimeAgo(msg.created_at)}
+                      </span>
+                   </div>
                 </div>
               </div>
 
-              {/* Expanded */}
               {expandedId === msg.id && (
-                <div className="px-5 pb-5 border-t border-gray-100 dark:border-white/[0.06]">
-                  <div className="mt-4 p-4 bg-gray-50 dark:bg-white/[0.02] rounded-lg border border-gray-100 dark:border-white/[0.04]">
-                    <p className="text-sm text-gray-700 dark:text-slate-300 leading-relaxed whitespace-pre-wrap">{msg.message}</p>
+                <div className="px-4 pb-4 border-t border-gray-100 dark:border-white/[0.05] animate-in slide-in-from-top-2">
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/[0.03] rounded font-mono text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+                    <div className="mb-2 text-[10px] text-amber-500/50 uppercase tracking-widest border-b border-amber-500/10 pb-1 flex justify-between">
+                      <span>Decrypted_Payload:</span>
+                      <span>CID: {msg.id.slice(0,8).toUpperCase()}</span>
+                    </div>
+                    <p className="whitespace-pre-wrap">{msg.message}</p>
                   </div>
-                  <div className="flex items-center justify-between mt-4">
-                    <p className="text-xs text-gray-400 dark:text-slate-600">
-                      {new Date(msg.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                    </p>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
+                    <span className="text-[9px] font-mono text-gray-500 uppercase">Timestamp: {new Date(msg.created_at).toLocaleString()}</span>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => markRead(msg.id, msg.is_read)}
-                        className="h-8 px-3 text-xs border-gray-200 dark:border-white/[0.08] text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200 gap-1.5">
-                        {msg.is_read ? <><EyeOff className="w-3.5 h-3.5" /> Mark unread</> : <><Eye className="w-3.5 h-3.5" /> Mark read</>}
+                      <Button variant="outline" size="sm" onClick={() => handleMarkRead(msg.id, msg.is_read)}
+                              className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:text-amber-500">
+                        {msg.is_read ? <EyeOff className="w-3 h-3 mr-2" /> : <Eye className="w-3 h-3 mr-2" />}
+                        {msg.is_read ? 'Flag_Unread' : 'Mark_As_Seen'}
                       </Button>
                       <a href={`mailto:${msg.email}`}>
-                        <Button variant="outline" size="sm" className="h-8 px-3 text-xs border-gray-200 dark:border-white/[0.08] gap-1.5">
-                          <Mail className="w-3.5 h-3.5" /> Reply
+                        <Button variant="outline" size="sm" className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:text-blue-500">
+                          <Mail className="w-3 h-3 mr-2" /> Outbound_Reply
                         </Button>
                       </a>
                       <Button variant="outline" size="sm" onClick={() => setDeleteId(msg.id)}
-                        className="h-8 px-3 text-xs border-gray-200 dark:border-white/[0.08] text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 hover:border-red-200 dark:hover:border-red-500/20 gap-1.5">
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                              className="h-8 px-3 font-mono text-[10px] uppercase border-gray-200 dark:border-white/[0.1] hover:bg-red-500/10 hover:text-red-500">
+                        <Trash2 className="w-3 h-3 mr-2" /> Purge
                       </Button>
                     </div>
                   </div>
@@ -237,17 +286,20 @@ export default function MessagesPage() {
         )}
       </div>
 
+      {/* ── Purge Dialog ── */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent className="bg-white dark:bg-[#0e1525] border border-gray-100 dark:border-white/[0.08]">
+        <AlertDialogContent className="dark:bg-[#0d1526] dark:border-white/[0.07]">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-gray-900 dark:text-slate-100">Delete message?</AlertDialogTitle>
-            <AlertDialogDescription className="text-gray-500 dark:text-slate-400 text-sm">
-              This action cannot be undone.
+            <AlertDialogTitle className="font-mono uppercase text-red-500 text-sm tracking-widest">Confirm_Purge?</AlertDialogTitle>
+            <AlertDialogDescription className="font-mono text-[11px]">
+              This data packet will be permanently deleted from the communication buffer.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="border-gray-200 dark:border-white/[0.08]">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white border-0">Delete</AlertDialogAction>
+            <AlertDialogCancel className="font-mono text-[10px] uppercase">Abort</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 font-mono text-[10px] uppercase tracking-widest">
+              Execute_Delete
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
